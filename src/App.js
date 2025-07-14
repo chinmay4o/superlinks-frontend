@@ -1,0 +1,126 @@
+import React from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from 'react-query'
+import { Toaster } from 'react-hot-toast'
+
+// Layouts
+import { DashboardLayout } from './components/layout/DashboardLayout'
+
+// Pages
+import { LoginPage } from './pages/auth/LoginPage'
+import { RegisterPage } from './pages/auth/RegisterPage'
+import { DashboardHomePage } from './pages/dashboard/DashboardHomePage'
+import { ProductsPage } from './pages/dashboard/ProductsPage'
+import { CreateProductPage } from './pages/dashboard/CreateProductPage'
+import { PurchasesPage } from './pages/dashboard/PurchasesPage'
+import { AnalyticsPage } from './pages/dashboard/AnalyticsPage'
+import { CommunicationsPage } from './pages/dashboard/CommunicationsPage'
+import { SettingsPage } from './pages/dashboard/SettingsPage'
+import { ProfileSettingsPage } from './pages/dashboard/ProfileSettingsPage'
+import { PaymentSettingsPage } from './pages/dashboard/PaymentSettingsPage'
+import { DomainSettingsPage } from './pages/dashboard/DomainSettingsPage'
+import { BioBuilderPage } from './pages/dashboard/BioBuilderPage'
+import { InstagramSettings } from './pages/dashboard/InstagramSettings'
+import { InstagramFunnels } from './pages/dashboard/InstagramFunnels'
+
+// Public pages
+import { ProductLandingPage } from './pages/public/ProductLandingPage'
+import { CheckoutPage } from './pages/public/CheckoutPage'
+import { ThankYouPage } from './pages/public/ThankYouPage'
+import { UserProfilePage } from './pages/public/UserProfilePage'
+import { PublicBioPage } from './pages/public/PublicBioPage'
+
+// Context
+import { AuthProvider } from './contexts/AuthContext'
+import { ThemeProvider } from './contexts/ThemeContext'
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+})
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AuthProvider>
+          <Router>
+          <div className="App">
+            <Routes>
+              {/* Auth Routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              
+              {/* Dashboard Routes */}
+              <Route path="/dashboard" element={<DashboardLayout />}>
+                <Route index element={<DashboardHomePage />} />
+                <Route path="products" element={<ProductsPage />} />
+                <Route path="products/new" element={<CreateProductPage />} />
+                <Route path="products/:id/edit" element={<CreateProductPage />} />
+                <Route path="purchases" element={<PurchasesPage />} />
+                <Route path="analytics" element={<AnalyticsPage />} />
+                <Route path="communications" element={<CommunicationsPage />} />
+                <Route path="bio" element={<BioBuilderPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="settings/profile" element={<ProfileSettingsPage />} />
+                <Route path="settings/payments" element={<PaymentSettingsPage />} />
+                <Route path="settings/domain" element={<DomainSettingsPage />} />
+                <Route path="instagram/settings" element={<InstagramSettings />} />
+                <Route path="instagram/funnels" element={<InstagramFunnels />} />
+              </Route>
+              
+              {/* Public Routes */}
+              <Route path="/p/:slug" element={<ProductLandingPage />} />
+              <Route path="/checkout/:productId" element={<CheckoutPage />} />
+              <Route path="/thank-you/:purchaseId" element={<ThankYouPage />} />
+              <Route path="/bio/:username" element={<PublicBioPage />} />
+              <Route path="/:username" element={<UserProfilePage />} />
+              <Route path="/:username/:productSlug" element={<ProductLandingPage />} />
+              
+              {/* Default redirect */}
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              
+              {/* 404 fallback */}
+              <Route path="*" element={<div>404 - Page Not Found</div>} />
+            </Routes>
+            
+            {/* Toast notifications */}
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: 'hsl(var(--card))',
+                  color: 'hsl(var(--card-foreground))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: 'calc(var(--radius) - 2px)',
+                },
+                success: {
+                  iconTheme: {
+                    primary: 'hsl(var(--primary))',
+                    secondary: 'hsl(var(--primary-foreground))',
+                  },
+                },
+                error: {
+                  iconTheme: {
+                    primary: 'hsl(var(--destructive))',
+                    secondary: 'hsl(var(--destructive-foreground))',
+                  },
+                },
+              }}
+            />
+          </div>
+          </Router>
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  )
+}
+
+export default App
