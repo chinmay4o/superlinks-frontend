@@ -57,6 +57,12 @@ const productService = {
     return response.data;
   },
 
+  // Get product content for buyers
+  getProductContent: async (id) => {
+    const response = await api.get(`/products/${id}/content`);
+    return response.data;
+  },
+
   // Create new product
   createProduct: async (productData) => {
     const response = await api.post('/products', productData);

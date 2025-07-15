@@ -6,6 +6,9 @@ import { Toaster } from 'react-hot-toast'
 // Layouts
 import { DashboardLayout } from './components/layout/DashboardLayout'
 
+// Components
+import { PrivateRoute } from './components/PrivateRoute'
+
 // Pages
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
@@ -29,6 +32,9 @@ import { CheckoutPage } from './pages/public/CheckoutPage'
 import { ThankYouPage } from './pages/public/ThankYouPage'
 import { UserProfilePage } from './pages/public/UserProfilePage'
 import { PublicBioPage } from './pages/public/PublicBioPage'
+
+// Content Viewer
+import { ContentViewer } from './components/ContentViewer'
 
 // Context
 import { AuthProvider } from './contexts/AuthContext'
@@ -57,8 +63,12 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               
-              {/* Dashboard Routes */}
-              <Route path="/dashboard" element={<DashboardLayout />}>
+              {/* Dashboard Routes - Protected */}
+              <Route path="/dashboard" element={
+                <PrivateRoute>
+                  <DashboardLayout />
+                </PrivateRoute>
+              }>
                 <Route index element={<DashboardHomePage />} />
                 <Route path="products" element={<ProductsPage />} />
                 <Route path="products/new" element={<CreateProductPage />} />
@@ -73,18 +83,24 @@ function App() {
                 <Route path="settings/domain" element={<DomainSettingsPage />} />
                 <Route path="instagram/settings" element={<InstagramSettings />} />
                 <Route path="instagram/funnels" element={<InstagramFunnels />} />
+                <Route path="content/:id" element={<ContentViewer />} />
               </Route>
               
               {/* Public Routes */}
               <Route path="/p/:slug" element={<ProductLandingPage />} />
               <Route path="/checkout/:productId" element={<CheckoutPage />} />
               <Route path="/thank-you/:purchaseId" element={<ThankYouPage />} />
+              <Route path="/content/:purchaseId" element={<ContentViewer />} />
               <Route path="/bio/:username" element={<PublicBioPage />} />
               <Route path="/:username" element={<UserProfilePage />} />
               <Route path="/:username/:productSlug" element={<ProductLandingPage />} />
               
               {/* Default redirect */}
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/" element={
+                <PrivateRoute>
+                  <Navigate to="/dashboard" replace />
+                </PrivateRoute>
+              } />
               
               {/* 404 fallback */}
               <Route path="*" element={<div>404 - Page Not Found</div>} />

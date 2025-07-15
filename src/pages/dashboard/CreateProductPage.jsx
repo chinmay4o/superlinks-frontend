@@ -8,10 +8,11 @@ import { Textarea } from '../../components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
 import { Checkbox } from '../../components/ui/checkbox'
 import { Badge } from '../../components/ui/badge'
-import { Upload, X, Plus, DollarSign, Tag, Image, FileText, Settings, ArrowLeft, ArrowRight } from 'lucide-react'
+import { Upload, X, Plus, DollarSign, Tag, Image, FileText, Settings, ArrowLeft, ArrowRight, Edit3 } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import toast from 'react-hot-toast'
 import productService from '../../services/productService'
+import RichTextEditor from '../../components/editor/RichTextEditor'
 
 const PRODUCT_CATEGORIES = [
   { value: 'ebook', label: 'Ebook' },
@@ -60,6 +61,12 @@ export function CreateProductPage() {
       showSalesCount: true,
       enableDownloadLimit: false,
       downloadLimit: 3
+    },
+    content: null, // Rich content from editor
+    contentMetadata: {
+      hasRichContent: false,
+      wordCount: 0,
+      readTime: 0
     }
   })
   
@@ -109,6 +116,12 @@ export function CreateProductPage() {
           showSalesCount: product.settings?.showSalesCount !== false,
           enableDownloadLimit: product.settings?.enableDownloadLimit || false,
           downloadLimit: product.settings?.downloadLimit || 3
+        },
+        content: product.content || null,
+        contentMetadata: {
+          hasRichContent: product.contentMetadata?.hasRichContent || false,
+          wordCount: product.contentMetadata?.wordCount || 0,
+          readTime: product.contentMetadata?.readTime || 0
         }
       })
       
@@ -316,13 +329,14 @@ export function CreateProductPage() {
   }
   
   const canPublish = () => {
-    // Only allow publishing after media has been uploaded or we're on the last steps
-    return activeTab === 'media' || activeTab === 'details' || activeTab === 'settings' || isEditing
+    // Only allow publishing after content/media has been created or we're on the last steps
+    return activeTab === 'content' || activeTab === 'media' || activeTab === 'details' || activeTab === 'settings' || isEditing
   }
 
   const tabs = [
     { id: 'basic', label: 'Basic Info', icon: FileText },
     { id: 'pricing', label: 'Pricing', icon: DollarSign },
+    { id: 'content', label: 'Content', icon: Edit3 },
     { id: 'media', label: 'Media & Files', icon: Image },
     { id: 'details', label: 'Details', icon: Tag },
     { id: 'settings', label: 'Settings', icon: Settings }
@@ -615,6 +629,58 @@ export function CreateProductPage() {
                     ))}
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Content Tab */}
+          {activeTab === 'content' && (
+            <div className="space-y-6">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <Label className="text-lg font-medium">Rich Content</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Create engaging content that buyers will access after purchase
+                    </p>
+                  </div>
+                  {productData.contentMetadata.hasRichContent && (
+                    <div className="text-sm text-muted-foreground">
+                      {productData.contentMetadata.wordCount} words • {productData.contentMetadata.readTime} min read
+                    </div>
+                  )}
+                </div>
+                
+                <div className="border rounded-lg p-4 min-h-[400px]">
+                  <RichTextEditor
+                    content={productData.content}
+                    onChange={(content) => {
+                      // Calculate word count and read time
+                      const textContent = content.replace(/<[^>]*>/g, '').trim()
+                      const wordCount = textContent ? textContent.split(/\s+/).length : 0
+                      const readTime = Math.max(1, Math.ceil(wordCount / 200))
+                      
+                      setProductData(prev => ({
+                        ...prev,
+                        content,
+                        contentMetadata: {
+                          hasRichContent: textContent.length > 0,
+                          wordCount,
+                          readTime
+                        }
+                      }))
+                    }}
+                    placeholder="Start creating your product content..."
+                  />
+                </div>
+                
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-medium text-blue-900 mb-2">Content Delivery</h4>
+                  <p className="text-sm text-blue-700">
+                    Instead of file downloads, buyers will access this rich content page after purchase. 
+                    You can include text, images, videos, and file download links within your content.
+                  </p>
+                </div>
               </div>
             </div>
           )}

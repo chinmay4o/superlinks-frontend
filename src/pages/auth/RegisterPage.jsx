@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { Button } from '../../components/ui/button'
 import { FormInput } from '../../components/ui/form-input'
@@ -12,8 +12,12 @@ import toast from 'react-hot-toast'
 
 export function RegisterPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { register: authRegister } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
+  
+  // Get the location they were trying to go to
+  const from = location.state?.from?.pathname || '/dashboard'
   
   const {
     register,
@@ -25,7 +29,7 @@ export function RegisterPage() {
     onSubmit: async (data) => {
       await authRegister(data)
       toast.success('Account created successfully!')
-      navigate('/dashboard')
+      navigate(from, { replace: true })
     },
     defaultValues: {
       name: '',
