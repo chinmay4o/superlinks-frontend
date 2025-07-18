@@ -43,12 +43,12 @@ const navigation = [
     icon: Download,
     description: 'View products you have purchased'
   },
-  {
-    name: 'Analytics',
-    href: '/dashboard/analytics',
-    icon: BarChart3,
-    description: 'Graphs and charts of your performance'
-  },
+  // {
+  //   name: 'Analytics',
+  //   href: '/dashboard/analytics',
+  //   icon: BarChart3,
+  //   description: 'Graphs and charts of your performance'
+  // },
   {
     name: 'Communications',
     href: '/dashboard/communications',
@@ -61,18 +61,18 @@ const navigation = [
     icon: LinkIcon,
     description: 'Create your link-in-bio page'
   },
-  {
-    name: 'Instagram Automation',
-    href: '/dashboard/instagram/settings',
-    icon: Instagram,
-    description: 'Connect Instagram and set up comment funnels'
-  },
-  {
-    name: 'Comment Funnels',
-    href: '/dashboard/instagram/funnels',
-    icon: Target,
-    description: 'Create and manage Instagram comment funnels'
-  }
+  // {
+  //   name: 'Instagram Automation',
+  //   href: '/dashboard/instagram/settings',
+  //   icon: Instagram,
+  //   description: 'Connect Instagram and set up comment funnels'
+  // },
+  // {
+  //   name: 'Comment Funnels',
+  //   href: '/dashboard/instagram/funnels',
+  //   icon: Target,
+  //   description: 'Create and manage Instagram comment funnels'
+  // }
 ]
 
 const settingsNavigation = [
@@ -94,12 +94,12 @@ const settingsNavigation = [
     icon: Globe,
     description: 'Connect a custom domain via DNS or CNAME'
   },
-  {
-    name: 'General Settings',
-    href: '/dashboard/settings',
-    icon: Settings,
-    description: 'General account settings'
-  }
+  // {
+  //   name: 'General Settings',
+  //   href: '/dashboard/settings',
+  //   icon: Settings,
+  //   description: 'General account settings'
+  // }
 ]
 
 export function Sidebar({ className }) {
