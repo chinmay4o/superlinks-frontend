@@ -4,7 +4,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import { Button } from '../../components/ui/button'
 import { FormInput } from '../../components/ui/form-input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
-import { Mail, Lock } from 'lucide-react'
+import { Alert, AlertDescription } from '../../components/ui/alert'
+import { Mail, Lock, AlertCircle } from 'lucide-react'
 import { useForm } from '../../hooks/useForm'
 import { loginSchema } from '../../lib/validations'
 import toast from 'react-hot-toast'
@@ -14,6 +15,7 @@ export function LoginPage() {
   const location = useLocation()
   const { login: authLogin } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
+  const [loginError, setLoginError] = useState(null)
 
   // Get the location they were trying to go to
   const from = location.state?.from?.pathname || '/dashboard'
@@ -25,14 +27,43 @@ export function LoginPage() {
   } = useForm({
     schema: loginSchema,
     onSubmit: async (data) => {
-      await authLogin(data)
-      toast.success('Welcome back!')
-      navigate(from, { replace: true })
+      try {
+        setLoginError(null)
+        await authLogin(data)
+        toast.success('Welcome back!')
+        navigate(from, { replace: true })
+      } catch (error) {
+        // Handle specific error codes from the backend
+        const errorResponse = error.response?.data
+        if (errorResponse?.code === 'USER_NOT_FOUND') {
+          setLoginError({
+            message: errorResponse.message,
+            action: 'signup'
+          })
+        } else if (errorResponse?.code === 'INVALID_PASSWORD') {
+          setLoginError({
+            message: errorResponse.message,
+            action: 'forgot_password'
+          })
+        } else if (errorResponse?.code === 'ACCOUNT_DEACTIVATED') {
+          setLoginError({
+            message: errorResponse.message,
+            action: null
+          })
+        } else {
+          setLoginError({
+            message: error.message || 'Login failed. Please try again.',
+            action: null
+          })
+        }
+        // Don't throw the error to prevent double toast
+      }
     },
     defaultValues: {
       email: '',
       password: ''
-    }
+    },
+    showToasts: false // Disable default toasts since we're handling errors manually
   })
 
   return (
@@ -57,6 +88,31 @@ export function LoginPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {loginError && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="flex flex-col gap-2">
+                    <span>{loginError.message}</span>
+                    {loginError.action === 'signup' && (
+                      <Link 
+                        to="/register" 
+                        className="underline font-medium hover:no-underline"
+                      >
+                        Click here to sign up
+                      </Link>
+                    )}
+                    {loginError.action === 'forgot_password' && (
+                      <Link 
+                        to="/forgot-password" 
+                        className="underline font-medium hover:no-underline"
+                      >
+                        Reset your password
+                      </Link>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
+              
               <FormInput
                 label="Email"
                 type="email"

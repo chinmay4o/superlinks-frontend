@@ -14,7 +14,8 @@ import {
   Globe,
   Link as LinkIcon,
   Instagram,
-  Target
+  Target,
+  Download
 } from 'lucide-react'
 
 const navigation = [
@@ -31,10 +32,16 @@ const navigation = [
     description: 'Create, edit, or delete digital products'
   },
   {
-    name: 'Purchases',
+    name: 'Sales',
     href: '/dashboard/purchases',
     icon: ShoppingCart,
-    description: 'List of customer transactions with filters'
+    description: 'Customer transactions and sales analytics'
+  },
+  {
+    name: 'My Purchases',
+    href: '/dashboard/my-purchases',
+    icon: Download,
+    description: 'View products you have purchased'
   },
   {
     name: 'Analytics',

@@ -53,7 +53,10 @@ export const authService = {
       
       return { user, token }
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Login failed')
+      // Preserve the full error response for better error handling
+      const enhancedError = new Error(error.response?.data?.message || 'Login failed')
+      enhancedError.response = error.response
+      throw enhancedError
     }
   },
 

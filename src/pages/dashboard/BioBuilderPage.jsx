@@ -159,10 +159,42 @@ export function BioBuilderPage() {
   }
 
   const updateForms = (bioData) => {
-    setProfileForm(bioData.profile || {})
-    setCustomizationForm(bioData.customization || {})
-    setSocialForm(bioData.socialLinks || {})
-    setSettingsForm(bioData.settings || {})
+    setProfileForm({
+      title: '',
+      description: '',
+      avatar: '',
+      location: '',
+      ...bioData.profile
+    })
+    setCustomizationForm({
+      theme: 'default',
+      primaryColor: '#000000',
+      backgroundColor: '#ffffff',
+      textColor: '#000000',
+      fontFamily: 'inter',
+      buttonStyle: 'rounded',
+      avatarShape: 'circle',
+      ...bioData.customization
+    })
+    setSocialForm({
+      instagram: '',
+      twitter: '',
+      youtube: '',
+      linkedin: '',
+      facebook: '',
+      website: '',
+      email: '',
+      ...bioData.socialLinks
+    })
+    setSettingsForm({
+      showBranding: true,
+      collectEmails: false,
+      emailTitle: 'Stay updated!',
+      emailDescription: 'Subscribe to get my latest updates',
+      isPasswordProtected: false,
+      password: '',
+      ...bioData.settings
+    })
   }
 
   const updateProfile = async () => {
@@ -798,30 +830,72 @@ export function BioBuilderPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="primary-color">Primary Color</Label>
-                  <Input
-                    id="primary-color"
-                    type="color"
-                    value={customizationForm.primaryColor}
-                    onChange={(e) => setCustomizationForm(prev => ({ ...prev, primaryColor: e.target.value }))}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="primary-color"
+                      type="color"
+                      value={customizationForm.primaryColor || '#000000'}
+                      onChange={(e) => setCustomizationForm(prev => ({ ...prev, primaryColor: e.target.value }))}
+                      className="h-10 w-20"
+                    />
+                    <Input
+                      value={customizationForm.primaryColor || '#000000'}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        if (/^#[0-9A-Fa-f]{6}$/.test(value) || value === '') {
+                          setCustomizationForm(prev => ({ ...prev, primaryColor: value }))
+                        }
+                      }}
+                      placeholder="#000000"
+                      className="flex-1"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="bg-color">Background Color</Label>
-                  <Input
-                    id="bg-color"
-                    type="color"
-                    value={customizationForm.backgroundColor}
-                    onChange={(e) => setCustomizationForm(prev => ({ ...prev, backgroundColor: e.target.value }))}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="bg-color"
+                      type="color"
+                      value={customizationForm.backgroundColor || '#ffffff'}
+                      onChange={(e) => setCustomizationForm(prev => ({ ...prev, backgroundColor: e.target.value }))}
+                      className="h-10 w-20"
+                    />
+                    <Input
+                      value={customizationForm.backgroundColor || '#ffffff'}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        if (/^#[0-9A-Fa-f]{6}$/.test(value) || value === '') {
+                          setCustomizationForm(prev => ({ ...prev, backgroundColor: value }))
+                        }
+                      }}
+                      placeholder="#ffffff"
+                      className="flex-1"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="text-color">Text Color</Label>
-                  <Input
-                    id="text-color"
-                    type="color"
-                    value={customizationForm.textColor}
-                    onChange={(e) => setCustomizationForm(prev => ({ ...prev, textColor: e.target.value }))}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="text-color"
+                      type="color"
+                      value={customizationForm.textColor || '#000000'}
+                      onChange={(e) => setCustomizationForm(prev => ({ ...prev, textColor: e.target.value }))}
+                      className="h-10 w-20"
+                    />
+                    <Input
+                      value={customizationForm.textColor || '#000000'}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        if (/^#[0-9A-Fa-f]{6}$/.test(value) || value === '') {
+                          setCustomizationForm(prev => ({ ...prev, textColor: value }))
+                        }
+                      }}
+                      placeholder="#000000"
+                      className="flex-1"
+                    />
+                  </div>
                 </div>
               </div>
               

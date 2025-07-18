@@ -12,10 +12,13 @@ import { PrivateRoute } from './components/PrivateRoute'
 // Pages
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
+import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
 import { DashboardHomePage } from './pages/dashboard/DashboardHomePage'
 import { ProductsPage } from './pages/dashboard/ProductsPage'
 import { CreateProductPage } from './pages/dashboard/CreateProductPage'
 import { PurchasesPage } from './pages/dashboard/PurchasesPage'
+import { MyPurchasesPage } from './pages/dashboard/MyPurchasesPage'
 import { AnalyticsPage } from './pages/dashboard/AnalyticsPage'
 import { CommunicationsPage } from './pages/dashboard/CommunicationsPage'
 import { SettingsPage } from './pages/dashboard/SettingsPage'
@@ -62,6 +65,8 @@ function App() {
               {/* Auth Routes */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
               
               {/* Dashboard Routes - Protected */}
               <Route path="/dashboard" element={
@@ -74,6 +79,7 @@ function App() {
                 <Route path="products/new" element={<CreateProductPage />} />
                 <Route path="products/:id/edit" element={<CreateProductPage />} />
                 <Route path="purchases" element={<PurchasesPage />} />
+                <Route path="my-purchases" element={<MyPurchasesPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="communications" element={<CommunicationsPage />} />
                 <Route path="bio" element={<BioBuilderPage />} />

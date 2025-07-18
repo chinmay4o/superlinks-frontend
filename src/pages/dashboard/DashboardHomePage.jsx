@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { 
   TrendingUp, 
@@ -8,69 +8,116 @@ import {
   Plus,
   ArrowUpRight,
   Eye,
-  ShoppingCart
+  ShoppingCart,
+  Loader2
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { formatCurrency, formatNumber } from '../../lib/utils'
+import toast from 'react-hot-toast'
 
-// Mock data - in real app this would come from API
-const stats = {
-  totalEarnings: 12580,
-  totalSales: 156,
-  totalProducts: 8,
-  totalViews: 3420
-}
-
-const recentSales = [
-  {
-    id: 1,
-    product: 'React Mastery Course',
-    buyer: 'john@example.com',
-    amount: 299,
-    date: '2024-01-10T10:30:00Z'
-  },
-  {
-    id: 2,
-    product: 'UI Design Templates',
-    buyer: 'sarah@example.com',
-    amount: 49,
-    date: '2024-01-10T09:15:00Z'
-  },
-  {
-    id: 3,
-    product: 'JavaScript Handbook',
-    buyer: 'mike@example.com',
-    amount: 79,
-    date: '2024-01-09T16:45:00Z'
-  }
-]
-
-const topProducts = [
-  {
-    id: 1,
-    name: 'React Mastery Course',
-    sales: 45,
-    revenue: 13455,
-    views: 1240
-  },
-  {
-    id: 2,
-    name: 'UI Design Templates',
-    sales: 67,
-    revenue: 3283,
-    views: 890
-  },
-  {
-    id: 3,
-    name: 'JavaScript Handbook',
-    sales: 34,
-    revenue: 2686,
-    views: 567
-  }
-]
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5005/api'
 
 export function DashboardHomePage() {
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState({
+    totalEarnings: 0,
+    totalSales: 0,
+    totalProducts: 0,
+    totalViews: 0
+  })
+  const [recentSales, setRecentSales] = useState([])
+  const [topProducts, setTopProducts] = useState([])
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true)
+      
+      // Fetch analytics overview
+      const [analyticsResponse, purchasesResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/analytics/overview`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }),
+        fetch(`${API_BASE_URL}/purchases?limit=5&status=completed`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+      ])
+
+      const analyticsData = await analyticsResponse.json()
+      const purchasesData = await purchasesResponse.json()
+
+      if (analyticsResponse.ok) {
+        setStats(analyticsData)
+      } else {
+        toast.error('Failed to load analytics data')
+      }
+
+      if (purchasesResponse.ok) {
+        // Transform purchases data for recent sales
+        const transformedSales = purchasesData.purchases.map(purchase => ({
+          id: purchase._id,
+          product: purchase.product?.title || 'Unknown Product',
+          buyer: purchase.buyerEmail,
+          amount: purchase.sellerAmount,
+          date: purchase.createdAt
+        }))
+        setRecentSales(transformedSales)
+
+        // Calculate top products from purchases (temporary solution)
+        const productStats = {}
+        purchasesData.purchases.forEach(purchase => {
+          if (purchase.product) {
+            const productId = purchase.product._id
+            if (!productStats[productId]) {
+              productStats[productId] = {
+                id: productId,
+                name: purchase.product.title,
+                sales: 0,
+                revenue: 0,
+                views: purchase.product.views || 0
+              }
+            }
+            productStats[productId].sales += 1
+            productStats[productId].revenue += purchase.sellerAmount
+          }
+        })
+        
+        // Get top 3 products by revenue
+        const topProductsList = Object.values(productStats)
+          .sort((a, b) => b.revenue - a.revenue)
+          .slice(0, 3)
+        
+        setTopProducts(topProductsList)
+      } else {
+        toast.error('Failed to load recent sales')
+      }
+      
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+      toast.error('Failed to load dashboard data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -97,9 +144,9 @@ export function DashboardHomePage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalEarnings)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(stats.totalEarnings || 0)}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+12.5%</span> from last month
+              Lifetime earnings
             </p>
           </CardContent>
         </Card>
@@ -110,9 +157,9 @@ export function DashboardHomePage() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.totalSales)}</div>
+            <div className="text-2xl font-bold">{formatNumber(stats.totalSales || 0)}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+8.2%</span> from last month
+              Total completed sales
             </p>
           </CardContent>
         </Card>
@@ -123,9 +170,9 @@ export function DashboardHomePage() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalProducts}</div>
+            <div className="text-2xl font-bold">{stats.totalProducts || 0}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-blue-600">+2</span> added this month
+              Published products
             </p>
           </CardContent>
         </Card>
@@ -136,9 +183,9 @@ export function DashboardHomePage() {
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.totalViews)}</div>
+            <div className="text-2xl font-bold">{formatNumber(stats.totalViews || 0)}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+18.1%</span> from last month
+              Total product views
             </p>
           </CardContent>
         </Card>
@@ -161,20 +208,28 @@ export function DashboardHomePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentSales.map((sale) => (
-                <div key={sale.id} className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none">{sale.product}</p>
-                    <p className="text-xs text-muted-foreground">{sale.buyer}</p>
+              {recentSales.length > 0 ? (
+                recentSales.map((sale) => (
+                  <div key={sale.id} className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium leading-none">{sale.product}</p>
+                      <p className="text-xs text-muted-foreground">{sale.buyer}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium">{formatCurrency(sale.amount)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(sale.date).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium">{formatCurrency(sale.amount)}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(sale.date).toLocaleDateString()}
-                    </p>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center py-6">
+                  <ShoppingCart className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">No sales yet</p>
+                  <p className="text-xs text-muted-foreground">Sales will appear here once you start selling</p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
@@ -195,30 +250,38 @@ export function DashboardHomePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topProducts.map((product, index) => (
-                <div key={product.id} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex-shrink-0">
-                      <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <span className="text-sm font-medium text-primary">#{index + 1}</span>
+              {topProducts.length > 0 ? (
+                topProducts.map((product, index) => (
+                  <div key={product.id} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex-shrink-0">
+                        <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <span className="text-sm font-medium text-primary">#{index + 1}</span>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium leading-none">{product.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {product.sales} sales • {formatNumber(product.views)} views
+                        </p>
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">{product.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {product.sales} sales • {formatNumber(product.views)} views
-                      </p>
+                    <div className="text-right">
+                      <p className="text-sm font-medium">{formatCurrency(product.revenue)}</p>
+                      <div className="flex items-center gap-1 text-xs text-green-600">
+                        <TrendingUp className="h-3 w-3" />
+                        <span>{product.views > 0 ? ((product.sales / product.views) * 100).toFixed(1) : 0}%</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium">{formatCurrency(product.revenue)}</p>
-                    <div className="flex items-center gap-1 text-xs text-green-600">
-                      <TrendingUp className="h-3 w-3" />
-                      <span>{((product.sales / product.views) * 100).toFixed(1)}%</span>
-                    </div>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center py-6">
+                  <Package className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">No products yet</p>
+                  <p className="text-xs text-muted-foreground">Create your first product to see performance</p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
