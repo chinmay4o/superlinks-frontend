@@ -24,16 +24,16 @@ import { useAuth } from '../../contexts/AuthContext'
 import { toast } from 'react-hot-toast'
 import { debounce } from 'lodash'
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5005'
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5005/api'
 
 const api = {
-  getProfile: () => fetch(`${API_BASE_URL}/api/users/profile`, {
+  getProfile: () => fetch(`${API_URL}/users/profile`, {
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('token')}`
     }
   }).then(res => res.json()),
   
-  updateProfile: (data) => fetch(`${API_BASE_URL}/api/users/profile`, {
+  updateProfile: (data) => fetch(`${API_URL}/users/profile`, {
     method: 'PUT',
     headers: { 
       'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ const api = {
     body: JSON.stringify(data)
   }).then(res => res.json()),
   
-  updateSettings: (data) => fetch(`${API_BASE_URL}/api/users/settings`, {
+  updateSettings: (data) => fetch(`${API_URL}/users/settings`, {
     method: 'PUT',
     headers: { 
       'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ const api = {
     body: JSON.stringify(data)
   }).then(res => res.json()),
   
-  changePassword: (data) => fetch(`${API_BASE_URL}/api/users/change-password`, {
+  changePassword: (data) => fetch(`${API_URL}/users/change-password`, {
     method: 'POST',
     headers: { 
       'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ const api = {
     body: JSON.stringify(data)
   }).then(res => res.json()),
   
-  checkUsername: (username) => fetch(`${API_BASE_URL}/api/users/check-username/${username}`, {
+  checkUsername: (username) => fetch(`${API_URL}/users/check-username/${username}`, {
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('token')}`
     }
