@@ -21,6 +21,9 @@ import json from 'highlight.js/lib/languages/json'
 import ImageUpload from './extensions/ImageUpload'
 import VideoUpload from './extensions/VideoUpload'
 
+// Import editor styles
+import './editor.css'
+
 import { Card, CardContent } from '../ui/card'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'

@@ -117,6 +117,21 @@ export default Node.create({
             fileId: img.getAttribute('data-file-id')
           }
         }
+      },
+      {
+        tag: 'div[data-type="imageUpload"]',
+        getAttrs: element => {
+          return {
+            src: element.getAttribute('data-src'),
+            alt: element.getAttribute('data-alt'),
+            title: element.getAttribute('data-title'),
+            width: element.getAttribute('data-width'),
+            height: element.getAttribute('data-height'),
+            alignment: element.getAttribute('data-alignment') || 'center',
+            caption: element.getAttribute('data-caption') || '',
+            fileId: element.getAttribute('data-file-id')
+          }
+        }
       }
     ]
   },

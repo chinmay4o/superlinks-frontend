@@ -12,7 +12,7 @@ import { Upload, X, Plus, DollarSign, Tag, Image, FileText, Settings, ArrowLeft,
 import { useDropzone } from 'react-dropzone'
 import toast from 'react-hot-toast'
 import productService from '../../services/productService'
-import RichTextEditor from '../../components/editor/RichTextEditor'
+import RichTextEditor from '../../components/editor/RichTextEditorSimple'
 
 const PRODUCT_CATEGORIES = [
   { value: 'ebook', label: 'Ebook' },
@@ -231,6 +231,41 @@ export function CreateProductPage() {
     setProductFiles(prev => prev.filter((_, i) => i !== index))
   }
 
+  // Helper function to get short description validation state
+  const getShortDescriptionValidation = () => {
+    const length = productData.shortDescription.length
+    if (length > 300) {
+      return {
+        isError: true,
+        isWarning: false,
+        message: `Description is ${length - 300} characters too long`,
+        colorClass: 'text-red-500 font-medium',
+        borderClass: 'border-red-500 focus:border-red-500 focus:ring-red-500'
+      }
+    } else if (length > 250) {
+      return {
+        isError: false,
+        isWarning: true,
+        message: 'Approaching character limit',
+        colorClass: 'text-yellow-500',
+        borderClass: 'border-yellow-500 focus:border-yellow-500 focus:ring-yellow-500'
+      }
+    } else {
+      return {
+        isError: false,
+        isWarning: false,
+        message: '',
+        colorClass: 'text-muted-foreground',
+        borderClass: ''
+      }
+    }
+  }
+
+  // Helper function to check if form has validation errors
+  const hasValidationErrors = () => {
+    return productData.shortDescription.length > 300
+  }
+
   const handleSubmit = async (isDraft = true) => {
     setIsSubmitting(true)
     try {
@@ -245,6 +280,10 @@ export function CreateProductPage() {
       }
       if (!productData.category) {
         toast.error('Product category is required')
+        return
+      }
+      if (productData.shortDescription.length > 300) {
+        toast.error('Short description cannot exceed 300 characters')
         return
       }
       if (!isDraft && (productData.price.amount === '' || parseFloat(productData.price.amount) < 0)) {
@@ -421,15 +460,33 @@ export function CreateProductPage() {
               </div>
 
               <div>
-                <Label htmlFor="shortDescription">Short Description</Label>
-                <Textarea
-                  id="shortDescription"
-                  value={productData.shortDescription}
-                  onChange={(e) => handleInputChange('shortDescription', e.target.value)}
-                  placeholder="Brief description (max 300 characters)"
-                  rows={2}
-                  className="mt-1"
-                />
+                {(() => {
+                  const validation = getShortDescriptionValidation()
+                  return (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="shortDescription">Short Description</Label>
+                        <span className={`text-sm ${validation.colorClass}`}>
+                          {productData.shortDescription.length}/300
+                        </span>
+                      </div>
+                      <Textarea
+                        id="shortDescription"
+                        value={productData.shortDescription}
+                        onChange={(e) => handleInputChange('shortDescription', e.target.value)}
+                        placeholder="Brief description (max 300 characters)"
+                        rows={2}
+                        maxLength={400}
+                        className={`mt-1 ${validation.borderClass}`}
+                      />
+                      {validation.message && (
+                        <p className={`text-sm mt-1 ${validation.isError ? 'text-red-500' : 'text-yellow-500'}`}>
+                          {validation.message}
+                        </p>
+                      )}
+                    </>
+                  )
+                })()}
               </div>
 
               <div>
@@ -876,7 +933,7 @@ export function CreateProductPage() {
               <Button 
                 variant="outline" 
                 onClick={() => handleSubmit(true)}
-                disabled={isSubmitting}
+                disabled={isSubmitting || hasValidationErrors()}
               >
                 Save as Draft
               </Button>
@@ -885,13 +942,21 @@ export function CreateProductPage() {
               {canPublish() && (
                 <Button 
                   onClick={() => handleSubmit(false)}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || hasValidationErrors()}
+                  title={hasValidationErrors() ? 'Please fix validation errors before publishing' : ''}
                 >
                   {isSubmitting 
                     ? (isEditing ? 'Updating...' : 'Publishing...') 
                     : (isEditing ? 'Update Product' : 'Publish Product')
                   }
                 </Button>
+              )}
+              
+              {/* Show validation error message when buttons are disabled */}
+              {hasValidationErrors() && (
+                <div className="text-sm text-red-500 font-medium">
+                  Fix validation errors to save/publish
+                </div>
               )}
             </div>
           </div>
