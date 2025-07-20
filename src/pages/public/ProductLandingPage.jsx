@@ -3,8 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
-import { Star, Download, Eye, ShoppingCart, Share2, Check, X, Heart, MessageCircle } from 'lucide-react'
+import { Star, Download, Eye, ShoppingCart, Share2, Check, X, Heart, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import reviewService from '../../services/reviewService'
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5005/api'
 
@@ -15,12 +16,41 @@ export function ProductLandingPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [reviews, setReviews] = useState([])
+  const [reviewsLoading, setReviewsLoading] = useState(false)
+  const [ratingDistribution, setRatingDistribution] = useState([])
+  const [reviewsSummary, setReviewsSummary] = useState({ totalReviews: 0, averageRating: 0 })
+  const [showAllReviews, setShowAllReviews] = useState(false)
   const showPurchaseButton = true
   
   // Determine which slug and API endpoint to use
   const actualSlug = slug || productSlug
   const isUserProduct = Boolean(username && productSlug)
   
+  // Fetch reviews for a product
+  const fetchReviews = async (productId) => {
+    try {
+      setReviewsLoading(true)
+      const data = await reviewService.getProductReviews(productId, {
+        page: 1,
+        limit: showAllReviews ? 50 : 3,
+        sortBy: 'newest'
+      })
+      
+      setReviews(data.reviews || [])
+      setRatingDistribution(data.ratingDistribution || [])
+      setReviewsSummary(data.summary || { totalReviews: 0, averageRating: 0 })
+    } catch (err) {
+      console.error('Error fetching reviews:', err)
+      // Don't show error to user for reviews, just use empty state
+      setReviews([])
+      setRatingDistribution([])
+      setReviewsSummary({ totalReviews: 0, averageRating: 0 })
+    } finally {
+      setReviewsLoading(false)
+    }
+  }
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -42,6 +72,11 @@ export function ProductLandingPage() {
         }
         
         setProduct(data.product)
+        
+        // Fetch reviews after product is loaded
+        if (data.product?._id) {
+          fetchReviews(data.product._id)
+        }
       } catch (err) {
         setError(err.message)
         console.error('Error fetching product:', err)
@@ -54,6 +89,13 @@ export function ProductLandingPage() {
       fetchProduct()
     }
   }, [actualSlug, username, productSlug, isUserProduct])
+
+  // Refetch reviews when showAllReviews changes
+  useEffect(() => {
+    if (product?._id) {
+      fetchReviews(product._id)
+    }
+  }, [showAllReviews])
   
   const handlePurchase = () => {
     if (!product) return
@@ -204,7 +246,7 @@ export function ProductLandingPage() {
                     <Star 
                       key={i} 
                       className={`h-4 w-4 ${
-                        i < Math.floor(product.stats?.rating?.average || 4) 
+                        i < Math.floor(reviewsSummary.averageRating || product.stats?.rating?.average || 0) 
                           ? 'fill-yellow-400 text-yellow-400' 
                           : 'text-gray-300'
                       }`} 
@@ -212,7 +254,7 @@ export function ProductLandingPage() {
                   ))}
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  {product.stats?.rating?.count || 107} ratings
+                  {reviewsSummary.totalReviews || product.stats?.rating?.count || 0} ratings
                 </span>
               </div>
             </div>
@@ -306,11 +348,11 @@ export function ProductLandingPage() {
               </div>
             )}
 
-            {/* Customer Reviews Section */}
+            {/* Related Products Section - Commented out for now */}
+            {/* 
             <div className="space-y-4">
               <h3 className="font-bold text-lg">Customers who bought this item also bought</h3>
               <div className="grid grid-cols-2 gap-4">
-                {/* Sample Related Products */}
                 <div className="border rounded-lg p-4">
                   <div className="w-full h-32 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg mb-3 flex items-center justify-center">
                     <span className="text-white font-bold text-lg">Sample Product</span>
@@ -336,6 +378,7 @@ export function ProductLandingPage() {
                 </div>
               </div>
             </div>
+            */}
           </div>
           
           {/* Right Column - Purchase Card & Ratings (1/3 width) */}
@@ -396,65 +439,109 @@ export function ProductLandingPage() {
             {/* Ratings Section */}
             <Card className="p-6">
               <div className="space-y-4">
-                <h3 className="font-bold">Ratings</h3>
-                
-                {/* Rating Distribution */}
-                <div className="space-y-2">
-                  {[
-                    { stars: 5, percentage: 87 },
-                    { stars: 4, percentage: 8 },
-                    { stars: 3, percentage: 3 },
-                    { stars: 2, percentage: 1 },
-                    { stars: 1, percentage: 1 }
-                  ].map((rating) => (
-                    <div key={rating.stars} className="flex items-center gap-2">
-                      <span className="text-sm font-medium">{rating.stars} stars</span>
-                      <div className="flex-1 bg-muted rounded-full h-2">
-                        <div 
-                          className="bg-primary rounded-full h-2 transition-all duration-300"
-                          style={{ width: `${rating.percentage}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-muted-foreground">{rating.percentage}%</span>
-                    </div>
-                  ))}
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold">Ratings</h3>
+                  {reviewsLoading && (
+                    <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+                  )}
                 </div>
                 
-                {/* Individual Reviews */}
-                <div className="space-y-4 pt-4 border-t">
-                  {/* Sample Reviews */}
-                  {[
-                    { rating: 5, text: "Thanks!", author: "Anonymous", badge: "NEW" },
-                    { rating: 5, text: "Truly a cool project. Lets see if it works :)", author: "Kristoffer Hemmink" },
-                    { rating: 5, text: "This is great. Thank you!", author: "Nathan Kappel" },
-                    { rating: 5, text: "beautiful", author: "Anonymous" },
-                    { rating: 5, text: "Fabulous", author: "Janitta Fournier" },
-                    { rating: 5, text: "Super useful guide and cheatsheet. Thanks.", author: "Tark Jembert" }
-                  ].slice(0, 3).map((review, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className={`h-3 w-3 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+                {reviewsSummary.totalReviews > 0 ? (
+                  <>
+                    {/* Rating Distribution */}
+                    <div className="space-y-2">
+                      {ratingDistribution.map((rating) => (
+                        <div key={rating.stars} className="flex items-center gap-2">
+                          <span className="text-sm font-medium">{rating.stars} stars</span>
+                          <div className="flex-1 bg-muted rounded-full h-2">
+                            <div 
+                              className="bg-primary rounded-full h-2 transition-all duration-300"
+                              style={{ width: `${rating.percentage}%` }}
+                            />
+                          </div>
+                          <span className="text-xs text-muted-foreground">{rating.percentage}%</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Individual Reviews */}
+                    <div className="space-y-4 pt-4 border-t">
+                      {reviews.length > 0 ? (
+                        <>
+                          {reviews.map((review) => (
+                            <div key={review._id} className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star key={i} className={`h-3 w-3 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+                                  ))}
+                                </div>
+                                {review.isVerifiedPurchase && (
+                                  <Badge variant="outline" className="text-xs">Verified Purchase</Badge>
+                                )}
+                              </div>
+                              <p className="text-sm leading-relaxed">{review.comment}</p>
+                              <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center overflow-hidden">
+                                  {review.user.avatar ? (
+                                    <img 
+                                      src={review.user.avatar} 
+                                      alt={review.user.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <span className="text-xs text-white font-medium">
+                                      {review.user.name.charAt(0).toUpperCase()}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-xs text-muted-foreground">
+                                  {review.user.name}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  • {new Date(review.reviewedAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
                           ))}
-                        </div>
-                        {review.badge && <span className="text-xs font-medium">{review.badge}</span>}
-                      </div>
-                      <p className="text-sm">{review.text}</p>
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                          <span className="text-xs text-white">{review.author.charAt(0)}</span>
-                        </div>
-                        <span className="text-xs text-muted-foreground">{review.author}</span>
-                      </div>
+                          
+                          {/* Load More / Show Less */}
+                          {reviewsSummary.totalReviews > 3 && (
+                            <Button 
+                              variant="link" 
+                              size="sm" 
+                              className="text-xs p-0 h-auto flex items-center gap-1"
+                              onClick={() => setShowAllReviews(!showAllReviews)}
+                              disabled={reviewsLoading}
+                            >
+                              {showAllReviews ? (
+                                <>
+                                  Show less
+                                  <ChevronUp className="h-3 w-3" />
+                                </>
+                              ) : (
+                                <>
+                                  Show all {reviewsSummary.totalReviews} reviews
+                                  <ChevronDown className="h-3 w-3" />
+                                </>
+                              )}
+                            </Button>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          No reviews yet
+                        </p>
+                      )}
                     </div>
-                  ))}
-                  
-                  {/* Load More */}
-                  <Button variant="link" size="sm" className="text-xs p-0 h-auto">
-                    Load more
-                  </Button>
-                </div>
+                  </>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-2">⭐</div>
+                    <p className="text-sm text-muted-foreground">No ratings yet</p>
+                    <p className="text-xs text-muted-foreground mt-1">Be the first to review this product!</p>
+                  </div>
+                )}
               </div>
             </Card>
           </div>
