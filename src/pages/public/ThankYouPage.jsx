@@ -64,7 +64,7 @@ export function ThankYouPage() {
   }
   
   const handleDownload = async () => {
-    if (!purchase?.downloadUrl) {
+    if (!purchase?.downloadInfo?.downloadKey) {
       toast.error('Download not available')
       return
     }
@@ -73,7 +73,7 @@ export function ThankYouPage() {
       setDownloading(true)
       
       // Open download URL in a new window to trigger download
-      const downloadUrl = `${API_BASE_URL}${purchase.downloadUrl}`
+      const downloadUrl = `${API_BASE_URL}/download/${purchase.downloadInfo.downloadKey}`
       window.open(downloadUrl, '_blank')
       
       toast.success('Download started!')
@@ -240,7 +240,7 @@ export function ThankYouPage() {
                 )}
                 
                 {/* Download Files Button */}
-                {purchase.product.files && purchase.product.files.length > 0 && (
+                {purchase.product.files && purchase.product.files.length > 0 && purchase.downloadInfo?.downloadKey && (
                   <Button 
                     onClick={handleDownload}
                     disabled={downloading}

@@ -172,7 +172,7 @@ const productService = {
   },
 
   // Update product with files
-  updateProductWithFiles: async (id, productData, coverImage, productFiles) => {
+  updateProductWithFiles: async (id, productData, coverImage, productFiles, existingFiles = [], filesToRemove = []) => {
     try {
       let coverImageData = null;
       let filesData = [];
@@ -183,7 +183,7 @@ const productService = {
         coverImageData = coverResponse.files[0];
       }
 
-      // Upload product files if provided
+      // Upload new product files if provided
       if (productFiles && productFiles.length > 0) {
         const filesResponse = await productService.uploadFiles(productFiles, id);
         filesData = filesResponse.files;
@@ -204,21 +204,29 @@ const productService = {
         };
       }
 
-      // Add new files if uploaded
-      if (filesData.length > 0) {
-        const newFiles = filesData.map(file => ({
-          name: file.originalName,
-          url: file.url,
-          key: file.key,
-          size: file.size,
-          type: file.mimetype,
-          isPreview: false
-        }));
-        
-        finalProductData.files = [
-          ...(finalProductData.files || []),
-          ...newFiles
-        ];
+      // Handle files array: merge existing files (not marked for removal) with new files
+      const remainingExistingFiles = existingFiles.filter(file => 
+        !filesToRemove.includes(file._id || file.id)
+      );
+
+      const newFiles = filesData.map(file => ({
+        name: file.originalName,
+        url: file.url,
+        key: file.key,
+        size: file.size,
+        type: file.mimetype,
+        isPreview: false
+      }));
+
+      // Combine existing files (not removed) with new files
+      finalProductData.files = [
+        ...remainingExistingFiles,
+        ...newFiles
+      ];
+
+      // Add files to remove info for backend processing
+      if (filesToRemove.length > 0) {
+        finalProductData.filesToRemove = filesToRemove;
       }
 
       // Update the product

@@ -71,7 +71,9 @@ export function CreateProductPage() {
   })
   
   const [coverImage, setCoverImage] = useState(null)
-  const [productFiles, setProductFiles] = useState([])
+  const [productFiles, setProductFiles] = useState([]) // New files to upload
+  const [existingFiles, setExistingFiles] = useState([]) // Existing files from database
+  const [filesToRemove, setFilesToRemove] = useState([]) // Files marked for removal
   const [newTag, setNewTag] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   
@@ -95,7 +97,7 @@ export function CreateProductPage() {
         shortDescription: product.shortDescription || '',
         category: product.category || '',
         price: {
-          amount: product.price?.amount || '',
+          amount: product.price?.amount !== undefined ? product.price.amount : '',
           currency: product.price?.currency || 'INR'
         },
         pricing: {
@@ -124,6 +126,11 @@ export function CreateProductPage() {
           readTime: product.contentMetadata?.readTime || 0
         }
       })
+      
+      // Load existing files
+      if (product.files && Array.isArray(product.files)) {
+        setExistingFiles(product.files)
+      }
       
     } catch (error) {
       console.error('Error fetching product:', error)
@@ -230,6 +237,13 @@ export function CreateProductPage() {
   const removeFile = (index) => {
     setProductFiles(prev => prev.filter((_, i) => i !== index))
   }
+  
+  const removeExistingFile = (fileId) => {
+    // Mark file for removal
+    setFilesToRemove(prev => [...prev, fileId])
+    // Remove from existing files display
+    setExistingFiles(prev => prev.filter(file => file._id !== fileId))
+  }
 
   // Helper function to get short description validation state
   const getShortDescriptionValidation = () => {
@@ -296,18 +310,25 @@ export function CreateProductPage() {
         ...productData,
         features: productData.features.filter(f => f.trim()),
         requirements: productData.requirements.filter(r => r.trim()),
-        isDraft
+        isDraft,
+        // Ensure price amount is properly formatted
+        price: {
+          ...productData.price,
+          amount: productData.price.amount === '' ? 0 : parseFloat(productData.price.amount)
+        }
       }
 
       let response
       if (isEditing) {
         // Update existing product
-        if (coverImage || productFiles.length > 0) {
+        if (coverImage || productFiles.length > 0 || filesToRemove.length > 0) {
           response = await productService.updateProductWithFiles(
             id,
             submissionData,
             coverImage,
-            productFiles
+            productFiles,
+            existingFiles,
+            filesToRemove
           )
         } else {
           response = await productService.updateProduct(id, submissionData)
@@ -664,11 +685,37 @@ export function CreateProductPage() {
                   </p>
                 </div>
 
+                {/* Existing Files */}
+                {isEditing && existingFiles.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <Label>Current Files</Label>
+                    {existingFiles.map((file) => (
+                      <div key={file._id || file.id} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div>
+                          <p className="font-medium">{file.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {file.size ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : 'Unknown size'}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeExistingFile(file._id || file.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* New Files to Upload */}
                 {productFiles.length > 0 && (
                   <div className="mt-4 space-y-2">
-                    <Label>Uploaded Files</Label>
+                    <Label>New Files to Upload</Label>
                     {productFiles.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <div key={index} className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
                         <div>
                           <p className="font-medium">{file.name}</p>
                           <p className="text-sm text-muted-foreground">
@@ -679,6 +726,7 @@ export function CreateProductPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeFile(index)}
+                          className="text-red-600 hover:text-red-800"
                         >
                           <X className="h-4 w-4" />
                         </Button>
