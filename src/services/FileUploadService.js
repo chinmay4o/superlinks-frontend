@@ -118,7 +118,7 @@ class FileUploadService {
       })
 
       // Configure request
-      xhr.open('POST', `${this.apiBaseUrl}/api/files/upload`)
+      xhr.open('POST', `${this.apiBaseUrl}/files/upload`)
       xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`)
       xhr.timeout = 5 * 60 * 1000 // 5 minutes timeout
       
