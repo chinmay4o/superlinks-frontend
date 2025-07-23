@@ -156,7 +156,7 @@
 }
 
 .section-padding {
-  @apply py-12 lg:py-20;
+  @apply py-4 lg:py-6;
 }
 
 /* Card variants */

@@ -13,6 +13,7 @@ import { useDropzone } from 'react-dropzone'
 import toast from 'react-hot-toast'
 import productService from '../../services/productService'
 import RichTextEditor from '../../components/editor/RichTextEditorSimple'
+import { dashboardColors } from '../../lib/dashboardColors'
 
 const PRODUCT_CATEGORIES = [
   { value: 'ebook', label: 'Ebook' },
@@ -364,7 +365,7 @@ export function CreateProductPage() {
     
     if (nextTab) {
       return (
-        <Button onClick={() => setActiveTab(nextTab.id)}>
+        <Button onClick={() => setActiveTab(nextTab.id)} className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}>
           Next Step
           <ArrowRight className="h-4 w-4 ml-2" />
         </Button>
@@ -379,7 +380,7 @@ export function CreateProductPage() {
     
     if (prevTab) {
       return (
-        <Button variant="outline" onClick={() => setActiveTab(prevTab.id)}>
+        <Button variant="outline" onClick={() => setActiveTab(prevTab.id)} className="hover:bg-purple-50 hover:border-purple-300">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Previous Step
         </Button>
@@ -416,7 +417,7 @@ export function CreateProductPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">
+        <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
           {isEditing ? 'Edit Product' : 'Create Product'}
         </h1>
         <p className="text-muted-foreground">
@@ -428,17 +429,17 @@ export function CreateProductPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex space-x-1 mb-6 overflow-x-auto">
+      <div className="flex space-x-1 mb-6 overflow-x-auto bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900 dark:to-gray-900 p-2 rounded-lg">
         {tabs.map((tab) => {
           const Icon = tab.icon
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg whitespace-nowrap transition-all duration-200 ${
                 activeTab === tab.id
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted hover:bg-muted/80'
+                  ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg transform scale-105'
+                  : 'bg-white dark:bg-gray-800 hover:bg-purple-50 dark:hover:bg-purple-950/20 hover:text-purple-600 shadow-sm'
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -448,7 +449,7 @@ export function CreateProductPage() {
         })}
       </div>
 
-      <Card>
+      <Card className="border-0 bg-gradient-to-br from-white to-slate-50 dark:from-gray-900 dark:to-slate-900 shadow-lg">
         <CardContent className="p-6">
           {/* Basic Info Tab */}
           {activeTab === 'basic' && (
@@ -643,7 +644,7 @@ export function CreateProductPage() {
             <div className="space-y-6">
               <div>
                 <Label>Cover Image</Label>
-                <div {...getCoverProps()} className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400 transition-colors">
+                <div {...getCoverProps()} className="mt-2 border-2 border-dashed border-purple-300 rounded-lg p-6 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all duration-200">
                   <input {...getCoverInputProps()} />
                   {coverImage ? (
                     <div className="space-y-2">
@@ -660,13 +661,14 @@ export function CreateProductPage() {
                           e.stopPropagation()
                           setCoverImage(null)
                         }}
+                        className="hover:bg-red-50 hover:border-red-300 hover:text-red-600"
                       >
                         Remove
                       </Button>
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                      <Upload className="mx-auto h-12 w-12 text-purple-400" />
                       <p className="text-sm text-muted-foreground">
                         Click to upload or drag and drop your cover image
                       </p>
@@ -677,9 +679,9 @@ export function CreateProductPage() {
 
               <div>
                 <Label>Product Files</Label>
-                <div {...getFilesProps()} className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400 transition-colors">
+                <div {...getFilesProps()} className="mt-2 border-2 border-dashed border-blue-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all duration-200">
                   <input {...getFilesInputProps()} />
-                  <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                  <Upload className="mx-auto h-8 w-8 text-blue-400 mb-2" />
                   <p className="text-sm text-muted-foreground">
                     Click to upload or drag and drop your product files
                   </p>
@@ -701,7 +703,7 @@ export function CreateProductPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeExistingFile(file._id || file.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 hover:bg-red-50"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -726,7 +728,7 @@ export function CreateProductPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeFile(index)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 hover:bg-red-50"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -803,17 +805,17 @@ export function CreateProductPage() {
                       placeholder="Add a tag"
                       onKeyPress={(e) => e.key === 'Enter' && addTag()}
                     />
-                    <Button onClick={addTag} variant="outline">
+                    <Button onClick={addTag} variant="outline" className="hover:bg-purple-50 hover:border-purple-300">
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
                   {productData.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {productData.tags.map((tag, index) => (
-                        <Badge key={index} variant="secondary" className="cursor-pointer">
+                        <Badge key={index} className="cursor-pointer bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800 border-purple-300 shadow-sm hover:from-purple-200 hover:to-blue-200">
                           {tag}
                           <X 
-                            className="h-3 w-3 ml-1" 
+                            className="h-3 w-3 ml-1 hover:text-red-600" 
                             onClick={() => removeTag(tag)}
                           />
                         </Badge>
@@ -826,7 +828,7 @@ export function CreateProductPage() {
               <div>
                 <div className="flex items-center justify-between">
                   <Label>Features</Label>
-                  <Button onClick={addFeature} variant="outline" size="sm">
+                  <Button onClick={addFeature} variant="outline" size="sm" className="hover:bg-green-50 hover:border-green-300">
                     <Plus className="h-4 w-4 mr-1" />
                     Add Feature
                   </Button>
@@ -844,6 +846,7 @@ export function CreateProductPage() {
                           onClick={() => removeFeature(index)}
                           variant="ghost"
                           size="sm"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -856,7 +859,7 @@ export function CreateProductPage() {
               <div>
                 <div className="flex items-center justify-between">
                   <Label>Requirements</Label>
-                  <Button onClick={addRequirement} variant="outline" size="sm">
+                  <Button onClick={addRequirement} variant="outline" size="sm" className="hover:bg-blue-50 hover:border-blue-300">
                     <Plus className="h-4 w-4 mr-1" />
                     Add Requirement
                   </Button>
@@ -874,6 +877,7 @@ export function CreateProductPage() {
                           onClick={() => removeRequirement(index)}
                           variant="ghost"
                           size="sm"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -968,7 +972,7 @@ export function CreateProductPage() {
           {/* Action Buttons */}
           <div className="flex justify-between pt-6 border-t">
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => navigate('/dashboard/products')}>
+              <Button variant="outline" onClick={() => navigate('/dashboard/products')} className="hover:bg-gray-50">
                 Cancel
               </Button>
               {getPrevButton()}
@@ -982,6 +986,7 @@ export function CreateProductPage() {
                 variant="outline" 
                 onClick={() => handleSubmit(true)}
                 disabled={isSubmitting || hasValidationErrors()}
+                className="hover:bg-orange-50 hover:border-orange-300"
               >
                 Save as Draft
               </Button>
@@ -992,6 +997,7 @@ export function CreateProductPage() {
                   onClick={() => handleSubmit(false)}
                   disabled={isSubmitting || hasValidationErrors()}
                   title={hasValidationErrors() ? 'Please fix validation errors before publishing' : ''}
+                  className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}
                 >
                   {isSubmitting 
                     ? (isEditing ? 'Updating...' : 'Publishing...') 

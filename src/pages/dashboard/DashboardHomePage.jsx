@@ -14,6 +14,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { formatCurrency, formatNumber } from '../../lib/utils'
+import { dashboardColors } from '../../lib/dashboardColors'
 import toast from 'react-hot-toast'
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5005/api'
@@ -128,7 +129,7 @@ export function DashboardHomePage() {
             Welcome back! Here's what's happening with your store today.
           </p>
         </div>
-        <Button asChild className="gap-2">
+        <Button asChild className={`gap-2 bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}>
           <Link to="/dashboard/products/new">
             <Plus className="h-4 w-4" />
             Create Product
@@ -138,53 +139,61 @@ export function DashboardHomePage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className={`border-0 bg-gradient-to-br ${dashboardColors.earnings.gradient}`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <div className={`h-8 w-8 rounded-full ${dashboardColors.earnings.icon} flex items-center justify-center`}>
+              <DollarSign className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalEarnings || 0)}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className={`text-2xl font-bold ${dashboardColors.earnings.text}`}>{formatCurrency(stats.totalEarnings || 0)}</div>
+            <p className={`text-xs ${dashboardColors.earnings.subtext}`}>
               Lifetime earnings
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className={`border-0 bg-gradient-to-br ${dashboardColors.sales.gradient}`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            <div className={`h-8 w-8 rounded-full ${dashboardColors.sales.icon} flex items-center justify-center`}>
+              <ShoppingCart className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.totalSales || 0)}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className={`text-2xl font-bold ${dashboardColors.sales.text}`}>{formatNumber(stats.totalSales || 0)}</div>
+            <p className={`text-xs ${dashboardColors.sales.subtext}`}>
               Total completed sales
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className={`border-0 bg-gradient-to-br ${dashboardColors.products.gradient}`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Products</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <div className={`h-8 w-8 rounded-full ${dashboardColors.products.icon} flex items-center justify-center`}>
+              <Package className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalProducts || 0}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className={`text-2xl font-bold ${dashboardColors.products.text}`}>{stats.totalProducts || 0}</div>
+            <p className={`text-xs ${dashboardColors.products.subtext}`}>
               Published products
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className={`border-0 bg-gradient-to-br ${dashboardColors.views.gradient}`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Page Views</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
+            <div className={`h-8 w-8 rounded-full ${dashboardColors.views.icon} flex items-center justify-center`}>
+              <Eye className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.totalViews || 0)}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className={`text-2xl font-bold ${dashboardColors.views.text}`}>{formatNumber(stats.totalViews || 0)}</div>
+            <p className={`text-xs ${dashboardColors.views.subtext}`}>
               Total product views
             </p>
           </CardContent>
@@ -193,13 +202,13 @@ export function DashboardHomePage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Sales */}
-        <Card>
+        <Card className={`border-0 bg-gradient-to-br ${dashboardColors.recentSales.gradient}`}>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Recent Sales</CardTitle>
+              <CardTitle className={dashboardColors.recentSales.title}>Recent Sales</CardTitle>
               <CardDescription>Your latest customer transactions</CardDescription>
             </div>
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="sm" className={dashboardColors.recentSales.button} asChild>
               <Link to="/dashboard/purchases" className="gap-1">
                 View all
                 <ArrowUpRight className="h-3 w-3" />
@@ -235,13 +244,13 @@ export function DashboardHomePage() {
         </Card>
 
         {/* Top Products */}
-        <Card>
+        <Card className={`border-0 bg-gradient-to-br ${dashboardColors.topProducts.gradient}`}>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Top Products</CardTitle>
+              <CardTitle className={dashboardColors.topProducts.title}>Top Products</CardTitle>
               <CardDescription>Your best performing products</CardDescription>
             </div>
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="sm" className={dashboardColors.topProducts.button} asChild>
               <Link to="/dashboard/analytics" className="gap-1">
                 View analytics
                 <ArrowUpRight className="h-3 w-3" />
@@ -255,8 +264,12 @@ export function DashboardHomePage() {
                   <div key={product.id} className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="flex-shrink-0">
-                        <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <span className="text-sm font-medium text-primary">#{index + 1}</span>
+                        <div className={`h-8 w-8 rounded-lg flex items-center justify-center bg-gradient-to-br ${
+                          index === 0 ? dashboardColors.rankings.first :
+                          index === 1 ? dashboardColors.rankings.second :
+                          dashboardColors.rankings.third
+                        }`}>
+                          <span className="text-sm font-bold text-white">#{index + 1}</span>
                         </div>
                       </div>
                       <div className="space-y-1">
@@ -288,39 +301,45 @@ export function DashboardHomePage() {
       </div>
 
       {/* Quick Actions */}
-      <Card>
+      <Card className={`border-0 bg-gradient-to-r ${dashboardColors.quickActions.gradient}`}>
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+          <CardTitle className={dashboardColors.quickActions.title}>Quick Actions</CardTitle>
           <CardDescription>Get started with these common tasks</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
-            <Button variant="outline" className="h-auto p-4 flex-col space-y-2" asChild>
+            <Button variant="outline" className={`h-auto p-4 flex-col space-y-2 ${dashboardColors.quickActions.createProduct.border} transition-all duration-200`} asChild>
               <Link to="/dashboard/products/new">
-                <Package className="h-6 w-6 text-primary" />
+                <div className={`h-10 w-10 rounded-full ${dashboardColors.quickActions.createProduct.icon} flex items-center justify-center mb-2`}>
+                  <Package className="h-5 w-5 text-white" />
+                </div>
                 <div className="text-center">
-                  <div className="font-medium">Create Your First Product</div>
-                  <div className="text-xs text-muted-foreground">Upload and sell digital products</div>
+                  <div className={`font-medium ${dashboardColors.quickActions.createProduct.text}`}>Create Your First Product</div>
+                  <div className={`text-xs ${dashboardColors.quickActions.createProduct.subtext}`}>Upload and sell digital products</div>
                 </div>
               </Link>
             </Button>
             
-            <Button variant="outline" className="h-auto p-4 flex-col space-y-2" asChild>
+            <Button variant="outline" className={`h-auto p-4 flex-col space-y-2 ${dashboardColors.quickActions.profile.border} transition-all duration-200`} asChild>
               <Link to="/dashboard/settings/profile">
-                <Users className="h-6 w-6 text-primary" />
+                <div className={`h-10 w-10 rounded-full ${dashboardColors.quickActions.profile.icon} flex items-center justify-center mb-2`}>
+                  <Users className="h-5 w-5 text-white" />
+                </div>
                 <div className="text-center">
-                  <div className="font-medium">Customize Your Profile</div>
-                  <div className="text-xs text-muted-foreground">Set up your creator profile</div>
+                  <div className={`font-medium ${dashboardColors.quickActions.profile.text}`}>Customize Your Profile</div>
+                  <div className={`text-xs ${dashboardColors.quickActions.profile.subtext}`}>Set up your creator profile</div>
                 </div>
               </Link>
             </Button>
             
-            <Button variant="outline" className="h-auto p-4 flex-col space-y-2" asChild>
+            <Button variant="outline" className={`h-auto p-4 flex-col space-y-2 ${dashboardColors.quickActions.payments.border} transition-all duration-200`} asChild>
               <Link to="/dashboard/settings/payments">
-                <DollarSign className="h-6 w-6 text-primary" />
+                <div className={`h-10 w-10 rounded-full ${dashboardColors.quickActions.payments.icon} flex items-center justify-center mb-2`}>
+                  <DollarSign className="h-5 w-5 text-white" />
+                </div>
                 <div className="text-center">
-                  <div className="font-medium">Setup Payments</div>
-                  <div className="text-xs text-muted-foreground">Configure your payment methods</div>
+                  <div className={`font-medium ${dashboardColors.quickActions.payments.text}`}>Setup Payments</div>
+                  <div className={`text-xs ${dashboardColors.quickActions.payments.subtext}`}>Configure your payment methods</div>
                 </div>
               </Link>
             </Button>

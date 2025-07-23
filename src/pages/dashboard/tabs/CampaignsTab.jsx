@@ -835,7 +835,7 @@ export default function CampaignsTab() {
           </DialogHeader>
 
           <Tabs defaultValue="content" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900 dark:to-orange-900 p-1 rounded-lg shadow-md border border-amber-200 dark:border-amber-800">
               <TabsTrigger value="content">Content</TabsTrigger>
               <TabsTrigger value="audience">Audience</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>

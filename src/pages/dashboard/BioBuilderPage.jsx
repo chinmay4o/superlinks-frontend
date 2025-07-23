@@ -32,6 +32,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
+import { dashboardColors } from '../../lib/dashboardColors'
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5005/api'
 
@@ -496,16 +497,16 @@ export function BioBuilderPage() {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={copyBioLink}>
+          <Button variant="outline" onClick={copyBioLink} className="hover:bg-purple-50 hover:border-purple-300">
             <Copy className="h-4 w-4 mr-2" />
             Copy Link
           </Button>
-          <Button variant="outline" onClick={previewBio}>
+          <Button variant="outline" onClick={previewBio} className="hover:bg-blue-50 hover:border-blue-300">
             <Eye className="h-4 w-4 mr-2" />
             Preview
           </Button>
           {user?.username && (
-            <Button onClick={() => window.open(`/bio/${user.username}`, '_blank')}>
+            <Button onClick={() => window.open(`/bio/${user.username}`, '_blank')} className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}>
               <ExternalLink className="h-4 w-4 mr-2" />
               View Live
             </Button>
@@ -523,7 +524,7 @@ export function BioBuilderPage() {
               <code className="bg-muted px-2 py-1 rounded text-sm">
                 {window.location.origin}/bio/{user.username}
               </code>
-              <Button variant="ghost" size="sm" onClick={copyBioLink}>
+              <Button variant="ghost" size="sm" onClick={copyBioLink} className="hover:bg-purple-50">
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
@@ -533,7 +534,7 @@ export function BioBuilderPage() {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900 p-1 rounded-lg shadow-md border border-purple-200 dark:border-purple-800">
           <TabsTrigger value="links">
             <LinkIcon className="h-4 w-4 mr-2" />
             Links
@@ -599,7 +600,7 @@ export function BioBuilderPage() {
                   placeholder="https://example.com/avatar.jpg"
                 />
               </div>
-              <Button onClick={updateProfile} disabled={saving}>
+              <Button onClick={updateProfile} disabled={saving} className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}>
                 <Save className="h-4 w-4 mr-2" />
                 {saving ? 'Saving...' : 'Save Profile'}
               </Button>
@@ -658,7 +659,7 @@ export function BioBuilderPage() {
                   </Select>
                 </div>
               </div>
-              <Button onClick={addLink}>
+              <Button onClick={addLink} className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Link
               </Button>
@@ -712,6 +713,7 @@ export function BioBuilderPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => setEditingLink(link)}
+                          className="hover:bg-blue-50"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -719,6 +721,7 @@ export function BioBuilderPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => deleteLink(link.id)}
+                          className="hover:bg-red-50"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -752,7 +755,7 @@ export function BioBuilderPage() {
                   </div>
                 ))}
               </div>
-              <Button onClick={updateSocialLinks} disabled={saving}>
+              <Button onClick={updateSocialLinks} disabled={saving} className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}>
                 <Save className="h-4 w-4 mr-2" />
                 {saving ? 'Saving...' : 'Save Social Links'}
               </Button>
@@ -899,7 +902,7 @@ export function BioBuilderPage() {
                 </div>
               </div>
               
-              <Button onClick={updateCustomization} disabled={saving}>
+              <Button onClick={updateCustomization} disabled={saving} className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}>
                 <Save className="h-4 w-4 mr-2" />
                 {saving ? 'Saving...' : 'Save Customization'}
               </Button>
@@ -983,7 +986,7 @@ export function BioBuilderPage() {
                 </div>
               )}
               
-              <Button onClick={updateSettings} disabled={saving}>
+              <Button onClick={updateSettings} disabled={saving} className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}>
                 <Save className="h-4 w-4 mr-2" />
                 {saving ? 'Saving...' : 'Save Settings'}
               </Button>
@@ -994,54 +997,62 @@ export function BioBuilderPage() {
         {/* Analytics Tab */}
         <TabsContent value="analytics" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
+            <Card className={`border-0 bg-gradient-to-br ${dashboardColors.views.gradient}`}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Views</p>
-                    <p className="text-2xl font-bold">{bio?.analytics?.totalViews || 0}</p>
+                    <p className={`text-sm ${dashboardColors.views.subtext}`}>Total Views</p>
+                    <p className={`text-2xl font-bold ${dashboardColors.views.text}`}>{bio?.analytics?.totalViews || 0}</p>
                   </div>
-                  <Eye className="h-8 w-8 text-blue-500" />
+                  <div className={`h-8 w-8 rounded-full ${dashboardColors.views.icon} flex items-center justify-center`}>
+                    <Eye className="h-4 w-4 text-white" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className={`border-0 bg-gradient-to-br ${dashboardColors.success.gradient}`}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Clicks</p>
-                    <p className="text-2xl font-bold">{bio?.analytics?.totalClicks || 0}</p>
+                    <p className={`text-sm ${dashboardColors.success.text}`}>Total Clicks</p>
+                    <p className={`text-2xl font-bold ${dashboardColors.success.text}`}>{bio?.analytics?.totalClicks || 0}</p>
                   </div>
-                  <LinkIcon className="h-8 w-8 text-green-500" />
+                  <div className={`h-8 w-8 rounded-full ${dashboardColors.earnings.icon} flex items-center justify-center`}>
+                    <LinkIcon className="h-4 w-4 text-white" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className={`border-0 bg-gradient-to-br ${dashboardColors.products.gradient}`}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Active Links</p>
-                    <p className="text-2xl font-bold">{bio?.links?.filter(l => l.isActive).length || 0}</p>
+                    <p className={`text-sm ${dashboardColors.products.subtext}`}>Active Links</p>
+                    <p className={`text-2xl font-bold ${dashboardColors.products.text}`}>{bio?.links?.filter(l => l.isActive).length || 0}</p>
                   </div>
-                  <Settings className="h-8 w-8 text-purple-500" />
+                  <div className={`h-8 w-8 rounded-full ${dashboardColors.products.icon} flex items-center justify-center`}>
+                    <Settings className="h-4 w-4 text-white" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className={`border-0 bg-gradient-to-br ${dashboardColors.warning.gradient}`}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Click Rate</p>
-                    <p className="text-2xl font-bold">
+                    <p className={`text-sm ${dashboardColors.warning.text}`}>Click Rate</p>
+                    <p className={`text-2xl font-bold ${dashboardColors.warning.text}`}>
                       {bio?.analytics?.totalViews > 0 
                         ? ((bio.analytics.totalClicks / bio.analytics.totalViews) * 100).toFixed(1)
                         : 0}%
                     </p>
                   </div>
-                  <BarChart3 className="h-8 w-8 text-orange-500" />
+                  <div className={`h-8 w-8 rounded-full bg-yellow-500 flex items-center justify-center`}>
+                    <BarChart3 className="h-4 w-4 text-white" />
+                  </div>
                 </div>
               </CardContent>
             </Card>

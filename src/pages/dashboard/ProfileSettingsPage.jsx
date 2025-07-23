@@ -23,6 +23,7 @@ import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { useAuth } from '../../contexts/AuthContext'
 import { toast } from 'react-hot-toast'
 import { debounce } from 'lodash'
+import { dashboardColors } from '../../lib/dashboardColors'
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5005/api'
 
@@ -254,7 +255,7 @@ export function ProfileSettingsPage() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList>
+        <TabsList className="bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900 dark:to-purple-900 p-1 rounded-lg shadow-md border border-violet-200 dark:border-violet-800">
           <TabsTrigger value="profile">
             <User className="mr-2 h-4 w-4" />
             Profile
@@ -389,6 +390,7 @@ export function ProfileSettingsPage() {
                         variant="outline" 
                         size="sm"
                         onClick={() => window.open(getProfileUrl(), '_blank')}
+                        className="hover:bg-purple-50 hover:border-purple-300"
                       >
                         <ExternalLink className="h-4 w-4" />
                       </Button>
@@ -399,6 +401,7 @@ export function ProfileSettingsPage() {
                 <Button 
                   type="submit" 
                   disabled={updateProfileMutation.isLoading || usernameStatus.available === false}
+                  className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}
                 >
                   {updateProfileMutation.isLoading ? 'Updating...' : 'Save Changes'}
                 </Button>
@@ -482,7 +485,7 @@ export function ProfileSettingsPage() {
                 </div>
                 <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
                   <DialogTrigger asChild>
-                    <Button variant="outline">
+                    <Button variant="outline" className="hover:bg-purple-50 hover:border-purple-300">
                       Change Password
                     </Button>
                   </DialogTrigger>
@@ -509,7 +512,7 @@ export function ProfileSettingsPage() {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="absolute right-0 top-0 h-full px-3"
+                            className="absolute right-0 top-0 h-full px-3 hover:bg-gray-100"
                             onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
                           >
                             {showPasswords.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -532,7 +535,7 @@ export function ProfileSettingsPage() {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="absolute right-0 top-0 h-full px-3"
+                            className="absolute right-0 top-0 h-full px-3 hover:bg-gray-100"
                             onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
                           >
                             {showPasswords.new ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -556,7 +559,7 @@ export function ProfileSettingsPage() {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="absolute right-0 top-0 h-full px-3"
+                            className="absolute right-0 top-0 h-full px-3 hover:bg-gray-100"
                             onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
                           >
                             {showPasswords.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -569,12 +572,13 @@ export function ProfileSettingsPage() {
                     </form>
                     
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>
+                      <Button variant="outline" onClick={() => setShowPasswordDialog(false)} className="hover:bg-gray-50">
                         Cancel
                       </Button>
                       <Button 
                         onClick={handlePasswordSubmit}
                         disabled={changePasswordMutation.isLoading || !passwordForm.currentPassword || !passwordForm.newPassword || passwordForm.newPassword !== passwordForm.confirmPassword}
+                        className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}
                       >
                         {changePasswordMutation.isLoading ? 'Changing...' : 'Change Password'}
                       </Button>

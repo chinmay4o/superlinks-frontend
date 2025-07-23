@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { Link } from 'react-router-dom'
+import { dashboardColors } from '../../lib/dashboardColors'
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5005/api'
 
@@ -111,17 +112,35 @@ export function MyPurchasesPage() {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      completed: { color: 'bg-green-500', label: 'Completed' },
-      pending: { color: 'bg-yellow-500', label: 'Pending' },
-      failed: { color: 'bg-red-500', label: 'Failed' },
-      refunded: { color: 'bg-gray-500', label: 'Refunded' },
-      cancelled: { color: 'bg-gray-500', label: 'Cancelled' }
+      completed: { 
+        className: 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300 shadow-sm', 
+        label: 'Completed' 
+      },
+      pending: { 
+        className: 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300 shadow-sm', 
+        label: 'Pending' 
+      },
+      failed: { 
+        className: 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300 shadow-sm', 
+        label: 'Failed' 
+      },
+      refunded: { 
+        className: 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300 shadow-sm', 
+        label: 'Refunded' 
+      },
+      cancelled: { 
+        className: 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300 shadow-sm', 
+        label: 'Cancelled' 
+      }
     }
     
-    const config = statusConfig[status] || { color: 'bg-gray-500', label: status }
+    const config = statusConfig[status] || { 
+      className: 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300 shadow-sm', 
+      label: status 
+    }
     
     return (
-      <Badge className={`${config.color} text-white`}>
+      <Badge className={config.className}>
         {config.label}
       </Badge>
     )
@@ -208,7 +227,7 @@ export function MyPurchasesPage() {
             <p className="text-muted-foreground mb-4">
               You haven't purchased any products yet. Start exploring!
             </p>
-            <Button asChild>
+            <Button asChild className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}>
               <Link to="/">Browse Products</Link>
             </Button>
           </CardContent>
@@ -216,12 +235,12 @@ export function MyPurchasesPage() {
       ) : (
         <div className="grid gap-4">
           {purchases.map((purchase) => (
-            <Card key={purchase._id} className="transition-shadow hover:shadow-md">
+            <Card key={purchase._id} className="transition-shadow hover:shadow-lg border-2 border-transparent hover:border-purple-200">
               <CardContent className="p-6">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                   {/* Product Info */}
                   <div className="flex items-start gap-4 flex-1">
-                    <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-lg flex items-center justify-center overflow-hidden shadow-md">
                       {purchase.product?.images?.cover ? (
                         <img 
                           src={purchase.product.images.cover} 
@@ -268,6 +287,7 @@ export function MyPurchasesPage() {
                           size="sm" 
                           variant="outline"
                           asChild
+                          className="hover:bg-purple-50 hover:border-purple-300"
                         >
                           <Link to={`/dashboard/content/${purchase.purchaseId}`}>
                             <Eye className="h-4 w-4 mr-2" />
@@ -278,6 +298,7 @@ export function MyPurchasesPage() {
                           <Button 
                             size="sm"
                             asChild
+                            className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}
                           >
                             <a 
                               href={`${API_BASE_URL}${purchase.downloadUrl}`}
@@ -327,6 +348,7 @@ export function MyPurchasesPage() {
               size="sm"
               onClick={() => setPagination(prev => ({ ...prev, currentPage: prev.currentPage - 1 }))}
               disabled={pagination.currentPage === 1}
+              className="hover:bg-purple-50 hover:border-purple-300"
             >
               Previous
             </Button>
@@ -335,6 +357,7 @@ export function MyPurchasesPage() {
               size="sm"
               onClick={() => setPagination(prev => ({ ...prev, currentPage: prev.currentPage + 1 }))}
               disabled={pagination.currentPage === pagination.totalPages}
+              className="hover:bg-purple-50 hover:border-purple-300"
             >
               Next
             </Button>

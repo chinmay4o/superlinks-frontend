@@ -31,6 +31,7 @@ import {
 } from '../../components/ui/dropdown-menu'
 import { Checkbox } from '../../components/ui/checkbox'
 import { toast } from 'react-hot-toast'
+import { dashboardColors } from '../../lib/dashboardColors'
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5005/api'
 
@@ -168,19 +169,19 @@ export function PurchasesPage() {
   const getStatusBadge = (status) => {
     const statusConfig = {
       completed: { 
-        className: 'bg-green-100 text-green-800 border-green-200 px-3 py-1 rounded-full text-xs font-medium', 
+        className: 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300 px-3 py-1 rounded-full text-xs font-medium shadow-sm', 
         label: 'Completed' 
       },
       pending: { 
-        className: 'bg-yellow-100 text-yellow-800 border-yellow-200 px-3 py-1 rounded-full text-xs font-medium', 
+        className: 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300 px-3 py-1 rounded-full text-xs font-medium shadow-sm', 
         label: 'Pending' 
       },
       failed: { 
-        className: 'bg-red-100 text-red-800 border-red-200 px-3 py-1 rounded-full text-xs font-medium', 
+        className: 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300 px-3 py-1 rounded-full text-xs font-medium shadow-sm', 
         label: 'Failed' 
       },
       refunded: { 
-        className: 'bg-gray-100 text-gray-800 border-gray-200 px-3 py-1 rounded-full text-xs font-medium', 
+        className: 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300 px-3 py-1 rounded-full text-xs font-medium shadow-sm', 
         label: 'Refunded' 
       }
     }
@@ -222,19 +223,19 @@ export function PurchasesPage() {
   const getPaymentMethodBadge = (method) => {
     const methodConfig = {
       razorpay: { 
-        className: 'bg-purple-100 text-purple-800 border-purple-200 px-3 py-1 rounded-full text-xs font-medium', 
+        className: 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border-purple-300 px-3 py-1 rounded-full text-xs font-medium shadow-sm', 
         label: 'Razorpay' 
       },
       free: { 
-        className: 'bg-green-100 text-green-800 border-green-200 px-3 py-1 rounded-full text-xs font-medium', 
+        className: 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300 px-3 py-1 rounded-full text-xs font-medium shadow-sm', 
         label: 'Free' 
       },
       stripe: { 
-        className: 'bg-blue-100 text-blue-800 border-blue-200 px-3 py-1 rounded-full text-xs font-medium', 
+        className: 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300 px-3 py-1 rounded-full text-xs font-medium shadow-sm', 
         label: 'Stripe' 
       },
       paypal: { 
-        className: 'bg-yellow-100 text-yellow-800 border-yellow-200 px-3 py-1 rounded-full text-xs font-medium', 
+        className: 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300 px-3 py-1 rounded-full text-xs font-medium shadow-sm', 
         label: 'PayPal' 
       }
     }
@@ -388,7 +389,7 @@ export function PurchasesPage() {
             Track and manage customer transactions
           </p>
         </div>
-        <Button onClick={fetchPurchases} variant="outline">
+        <Button onClick={fetchPurchases} variant="outline" className="hover:bg-purple-50 hover:border-purple-300">
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
         </Button>
@@ -396,59 +397,59 @@ export function PurchasesPage() {
       
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className={`border-0 bg-gradient-to-br ${dashboardColors.sales.gradient}`}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Sales</p>
-                <p className="text-2xl font-bold">{stats.totalPurchases}</p>
+                <p className={`text-sm ${dashboardColors.sales.subtext}`}>Total Sales</p>
+                <p className={`text-2xl font-bold ${dashboardColors.sales.text}`}>{stats.totalPurchases}</p>
               </div>
-              <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <Package className="h-4 w-4 text-blue-600" />
+              <div className={`h-8 w-8 rounded-full ${dashboardColors.sales.icon} flex items-center justify-center`}>
+                <Package className="h-4 w-4 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className={`border-0 bg-gradient-to-br ${dashboardColors.earnings.gradient}`}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-2xl font-bold">
+                <p className={`text-sm ${dashboardColors.earnings.subtext}`}>Total Revenue</p>
+                <p className={`text-2xl font-bold ${dashboardColors.earnings.text}`}>
                   {formatCurrency(stats.totalRevenue)}
                 </p>
               </div>
-              <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
-                <DollarSign className="h-4 w-4 text-green-600" />
+              <div className={`h-8 w-8 rounded-full ${dashboardColors.earnings.icon} flex items-center justify-center`}>
+                <DollarSign className="h-4 w-4 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className={`border-0 bg-gradient-to-br ${dashboardColors.success.gradient}`}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Completed</p>
-                <p className="text-2xl font-bold">{stats.completedPurchases}</p>
+                <p className={`text-sm ${dashboardColors.success.text}`}>Completed</p>
+                <p className={`text-2xl font-bold ${dashboardColors.success.text}`}>{stats.completedPurchases}</p>
               </div>
-              <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
-                <Eye className="h-4 w-4 text-green-600" />
+              <div className={`h-8 w-8 rounded-full ${dashboardColors.earnings.icon} flex items-center justify-center`}>
+                <Check className="h-4 w-4 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className={`border-0 bg-gradient-to-br ${dashboardColors.warning.gradient}`}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold">{stats.pendingPurchases}</p>
+                <p className={`text-sm ${dashboardColors.warning.text}`}>Pending</p>
+                <p className={`text-2xl font-bold ${dashboardColors.warning.text}`}>{stats.pendingPurchases}</p>
               </div>
-              <div className="h-8 w-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                <Calendar className="h-4 w-4 text-yellow-600" />
+              <div className={`h-8 w-8 rounded-full bg-yellow-500 flex items-center justify-center`}>
+                <Calendar className="h-4 w-4 text-white" />
               </div>
             </div>
           </CardContent>
@@ -498,7 +499,7 @@ export function PurchasesPage() {
               </SelectContent>
             </Select>
             
-            <Button onClick={handleSearch} variant="outline">
+            <Button onClick={handleSearch} variant="outline" className="hover:bg-purple-50 hover:border-purple-300">
               <Filter className="h-4 w-4 mr-2" />
               Filter
             </Button>
@@ -508,7 +509,7 @@ export function PurchasesPage() {
       
       {/* Bulk Actions */}
       {selectedItems.length > 0 && (
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className={`border-0 bg-gradient-to-br ${dashboardColors.info.gradient}`}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -521,6 +522,7 @@ export function PurchasesPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => handleBulkAction('Export')}
+                  className="hover:bg-blue-100 hover:border-blue-300"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Export CSV
@@ -564,7 +566,7 @@ export function PurchasesPage() {
           ) : (
             <div className="overflow-x-auto">
               {/* Table Header */}
-              <div className="grid grid-cols-12 gap-4 p-4 bg-muted/30 rounded-t-lg text-sm font-medium text-muted-foreground border-b">
+              <div className="grid grid-cols-12 gap-4 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950 dark:to-indigo-950 rounded-t-lg text-sm font-medium text-muted-foreground border-b">
                 <div className="col-span-1 flex items-center">
                   <Checkbox 
                     checked={selectAll}
@@ -604,7 +606,7 @@ export function PurchasesPage() {
                       </div>
                       {/* Customer Column */}
                       <div className="col-span-3 flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold shadow-lg">
                           {customerInitials}
                         </div>
                         <div className="min-w-0 flex-1">
@@ -624,7 +626,7 @@ export function PurchasesPage() {
                       
                       {/* Product Info Column */}
                       <div className="col-span-2 flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-600 rounded-md flex items-center justify-center text-white text-xs font-bold overflow-hidden">
+                        <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-md flex items-center justify-center text-white text-xs font-bold overflow-hidden shadow-md">
                           {purchase.product?.images?.cover?.url ? (
                             <img
                               src={purchase.product.images.cover.url}
@@ -731,7 +733,7 @@ export function PurchasesPage() {
               
               {/* Table Footer with Summary */}
               {purchases.length > 0 && (
-                <div className="p-4 bg-muted/20 rounded-b-lg border-t">
+                <div className="p-4 bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-950 dark:to-gray-950 rounded-b-lg border-t">
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-6">
                       <span className="text-muted-foreground">
@@ -766,6 +768,7 @@ export function PurchasesPage() {
             variant="outline"
             onClick={() => setPagination(prev => ({ ...prev, currentPage: prev.currentPage - 1 }))}
             disabled={pagination.currentPage === 1}
+            className="hover:bg-purple-50 hover:border-purple-300"
           >
             Previous
           </Button>
@@ -790,6 +793,7 @@ export function PurchasesPage() {
             variant="outline"
             onClick={() => setPagination(prev => ({ ...prev, currentPage: prev.currentPage + 1 }))}
             disabled={pagination.currentPage === pagination.totalPages}
+            className="hover:bg-purple-50 hover:border-purple-300"
           >
             Next
           </Button>
@@ -877,7 +881,7 @@ export function PurchasesPage() {
               <div>
                 <h3 className="font-semibold mb-3">Product Information</h3>
                 <div className="flex gap-3 mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold overflow-hidden">
+                  <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold overflow-hidden shadow-lg">
                     {selectedPurchase.product?.images?.cover?.url ? (
                       <img
                         src={selectedPurchase.product.images.cover.url}
@@ -936,11 +940,11 @@ export function PurchasesPage() {
               
               {/* Actions */}
               <div className="space-y-2">
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full hover:bg-purple-50 hover:border-purple-300">
                   <Mail className="h-4 w-4 mr-2" />
                   Contact Customer
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full hover:bg-green-50 hover:border-green-300">
                   <Download className="h-4 w-4 mr-2" />
                   Download Receipt
                 </Button>

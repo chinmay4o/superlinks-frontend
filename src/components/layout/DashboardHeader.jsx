@@ -58,12 +58,12 @@ export function DashboardHeader() {
       {/* Actions */}
       <div className="flex items-center space-x-4">
         {/* Create Product Button */}
-        <Button asChild className="gap-2">
+        {/* <Button asChild className="gap-2">
           <Link to="/dashboard/products/new">
             <Plus className="h-4 w-4" />
             Create Product
           </Link>
-        </Button>
+        </Button> */}
 
         {/* Theme Toggle */}
         <SimpleThemeToggle />

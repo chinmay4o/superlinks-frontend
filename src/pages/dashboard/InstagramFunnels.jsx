@@ -687,7 +687,7 @@ export function InstagramFunnels() {
           </DialogHeader>
 
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-rose-100 to-pink-100 dark:from-rose-900 dark:to-pink-900 p-1 rounded-lg shadow-md border border-rose-200 dark:border-rose-800">
               <TabsTrigger value="basic">Basic</TabsTrigger>
               <TabsTrigger value="triggers">Triggers</TabsTrigger>
               <TabsTrigger value="response">Response</TabsTrigger>

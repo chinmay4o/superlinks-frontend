@@ -7,6 +7,7 @@ import { DomainInstructions } from '../../components/domain/DomainInstructions'
 import { EmailSetup } from '../../components/domain/EmailSetup'
 import { domainService } from '../../services/domainService'
 import { Globe, List, FileText, Mail, AlertCircle, Info } from 'lucide-react'
+import { dashboardColors } from '../../lib/dashboardColors'
 
 export function DomainSettingsPage() {
   const [domains, setDomains] = useState([])
@@ -55,8 +56,8 @@ export function DomainSettingsPage() {
         </p>
       </div>
 
-      <Alert>
-        <Info className="h-4 w-4" />
+      <Alert className={`border-0 bg-gradient-to-r ${dashboardColors.info.gradient}`}>
+        <Info className={`h-4 w-4 ${dashboardColors.info.icon}`} />
         <div>
           <p className="font-medium">Why use custom domains?</p>
           <p className="text-sm mt-1">
@@ -66,7 +67,7 @@ export function DomainSettingsPage() {
       </Alert>
 
       <Tabs defaultValue="add" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-indigo-100 to-cyan-100 dark:from-indigo-900 dark:to-cyan-900 p-1 rounded-lg shadow-md border border-indigo-200 dark:border-indigo-800">
           <TabsTrigger value="add" className="flex items-center gap-2">
             <Globe className="h-4 w-4" />
             Add Domain
@@ -106,8 +107,8 @@ export function DomainSettingsPage() {
           {selectedDomain ? (
             <DomainInstructions domain={selectedDomain} />
           ) : (
-            <Alert>
-              <Info className="h-4 w-4" />
+            <Alert className={`border-0 bg-gradient-to-r ${dashboardColors.warning.gradient}`}>
+              <Info className={`h-4 w-4 ${dashboardColors.warning.icon}`} />
               <div>
                 <p className="font-medium">No domain selected</p>
                 <p className="text-sm mt-1">

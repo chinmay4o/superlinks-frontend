@@ -16,6 +16,7 @@ import {
   Trash2
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { dashboardColors } from '../../lib/dashboardColors'
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5005/api'
 
@@ -272,7 +273,7 @@ export function PaymentSettingsPage() {
             </div>
             
             <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-green-600">
+              <Badge className="bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300 shadow-sm">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Connected
               </Badge>
@@ -282,11 +283,11 @@ export function PaymentSettingsPage() {
             </div>
             
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleEdit}>
+              <Button variant="outline" onClick={handleEdit} className="hover:bg-blue-50 hover:border-blue-300">
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </Button>
-              <Button variant="destructive" onClick={handleDisconnect}>
+              <Button variant="destructive" onClick={handleDisconnect} className="hover:bg-red-600">
                 <Trash2 className="h-4 w-4 mr-2" />
                 Disconnect
               </Button>
@@ -477,7 +478,7 @@ export function PaymentSettingsPage() {
               </div>
               
               <div className="flex gap-2 pt-4">
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting} className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}>
                   {isSubmitting ? (
                     <>
                       <Save className="h-4 w-4 mr-2 animate-spin" />
@@ -492,7 +493,7 @@ export function PaymentSettingsPage() {
                 </Button>
                 
                 {showForm && (
-                  <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                  <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="hover:bg-gray-50">
                     Cancel
                   </Button>
                 )}

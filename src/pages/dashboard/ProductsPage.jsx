@@ -16,6 +16,7 @@ import {
   ExternalLink,
   DollarSign,
   Users,
+  Package,
  
 } from 'lucide-react'
 import {
@@ -27,6 +28,7 @@ import {
 } from '../../components/ui/dropdown-menu'
 import { useNavigate } from 'react-router-dom'
 import productService from '../../services/productService'
+import { dashboardColors } from '../../lib/dashboardColors'
 import toast from 'react-hot-toast'
 
 const PRODUCT_CATEGORIES = [
@@ -121,12 +123,12 @@ export function ProductsPage() {
 
   const getStatusBadge = (product) => {
     if (product.isArchived) {
-      return <Badge variant="secondary">Archived</Badge>
+      return <Badge variant="secondary" className="bg-gray-100 text-gray-700">Archived</Badge>
     }
     if (product.isPublished) {
-      return <Badge variant="default">Published</Badge>
+      return <Badge className="bg-green-100 text-green-700 border-green-300">Published</Badge>
     }
-    return <Badge variant="outline">Draft</Badge>
+    return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-300">Draft</Badge>
   }
 
   const formatCurrency = (amount, currency = 'INR') => {
@@ -155,7 +157,7 @@ export function ProductsPage() {
             Manage your digital products and track their performance
           </p>
         </div>
-        <Button onClick={() => navigate('/dashboard/products/new')}>
+        <Button onClick={() => navigate('/dashboard/products/new')} className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}>
           <Plus className="h-4 w-4 mr-2" />
           Create Product
         </Button>
@@ -163,63 +165,63 @@ export function ProductsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className={`border-0 bg-gradient-to-br ${dashboardColors.products.gradient}`}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Products</p>
-                <p className="text-2xl font-bold">{pagination.total}</p>
+                <p className={`text-sm ${dashboardColors.products.subtext}`}>Total Products</p>
+                <p className={`text-2xl font-bold ${dashboardColors.products.text}`}>{pagination.total}</p>
               </div>
-              <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <Users className="h-4 w-4 text-blue-600" />
+              <div className={`h-8 w-8 rounded-full ${dashboardColors.products.icon} flex items-center justify-center`}>
+                <Package className="h-4 w-4 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className={`border-0 bg-gradient-to-br ${dashboardColors.success.gradient}`}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Published</p>
-                <p className="text-2xl font-bold">
+                <p className={`text-sm ${dashboardColors.success.text}`}>Published</p>
+                <p className={`text-2xl font-bold ${dashboardColors.success.text}`}>
                   {products.filter(p => p.isPublished).length}
                 </p>
               </div>
-              <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
-                <Eye className="h-4 w-4 text-green-600" />
+              <div className={`h-8 w-8 rounded-full ${dashboardColors.earnings.icon} flex items-center justify-center`}>
+                <Eye className="h-4 w-4 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className={`border-0 bg-gradient-to-br ${dashboardColors.warning.gradient}`}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Drafts</p>
-                <p className="text-2xl font-bold">
+                <p className={`text-sm ${dashboardColors.warning.text}`}>Drafts</p>
+                <p className={`text-2xl font-bold ${dashboardColors.warning.text}`}>
                   {products.filter(p => p.isDraft).length}
                 </p>
               </div>
-              <div className="h-8 w-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                <Edit className="h-4 w-4 text-yellow-600" />
+              <div className={`h-8 w-8 rounded-full bg-yellow-500 flex items-center justify-center`}>
+                <Edit className="h-4 w-4 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className={`border-0 bg-gradient-to-br ${dashboardColors.earnings.gradient}`}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-2xl font-bold">
+                <p className={`text-sm ${dashboardColors.earnings.subtext}`}>Total Revenue</p>
+                <p className={`text-2xl font-bold ${dashboardColors.earnings.text}`}>
                   ₹{products.reduce((sum, p) => sum + (p.stats?.revenue || 0), 0).toLocaleString()}
                 </p>
               </div>
-              <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center">
-                <DollarSign className="h-4 w-4 text-purple-600" />
+              <div className={`h-8 w-8 rounded-full ${dashboardColors.earnings.icon} flex items-center justify-center`}>
+                <DollarSign className="h-4 w-4 text-white" />
               </div>
             </div>
           </CardContent>
@@ -293,7 +295,7 @@ export function ProductsPage() {
                     : 'Get started by creating your first digital product'}
                 </p>
               </div>
-              <Button onClick={() => navigate('/dashboard/products/new')}>
+              <Button onClick={() => navigate('/dashboard/products/new')} className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create Your First Product
               </Button>
@@ -303,7 +305,7 @@ export function ProductsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
-            <Card key={product._id} className="group hover:shadow-lg transition-shadow">
+            <Card key={product._id} className="group hover:shadow-lg transition-all duration-200 hover:border-purple-200 border-2 border-transparent">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="space-y-1 flex-1">
