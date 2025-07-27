@@ -22,8 +22,9 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useTheme } from '../../contexts/ThemeContext'
+import PreviewContent from '../../components/bio-builder/MobilePreview/PreviewContent'
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5005/api'
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5005/api'
 
 const SOCIAL_ICONS = {
   instagram: Instagram,
@@ -87,7 +88,7 @@ export function PublicBioPage() {
         params.append('password', attemptPassword)
       }
       
-      const response = await fetch(`${API_BASE_URL}/bio/public/${username}?${params}`)
+      const response = await fetch(`${API_URL}/bio/public/${username}?${params}`)
       const data = await response.json()
       
       if (response.ok) {
@@ -129,20 +130,16 @@ export function PublicBioPage() {
     }
   }
 
-  const handleLinkClick = async (link) => {
-    try {
-      // Track click
-      await fetch(`${API_BASE_URL}/bio/click/${username}/${link.id}`, {
-        method: 'POST'
-      })
-      
-      // Open link
-      window.open(link.url, '_blank', 'noopener,noreferrer')
-    } catch (error) {
+  const handleLinkClick = (link) => {
+    // Open link immediately while we still have user gesture
+    window.open(link.url, '_blank', 'noopener,noreferrer')
+    
+    // Track click asynchronously (don't await)
+    fetch(`${API_URL}/bio/click/${username}/${link.id}`, {
+      method: 'POST'
+    }).catch(error => {
       console.error('Error tracking click:', error)
-      // Still open the link even if tracking fails
-      window.open(link.url, '_blank', 'noopener,noreferrer')
-    }
+    })
   }
 
   const handleEmailSubscription = async (e) => {
@@ -278,6 +275,74 @@ export function PublicBioPage() {
     return avatarShape === 'square' ? `${baseClasses} rounded-lg` : `${baseClasses} rounded-full`
   }
 
+  const getPublicBackgroundStyles = () => {
+    const customization = bio?.customization || {}
+    const styles = {
+      minHeight: '100vh',
+      fontFamily: fontFamilyMap[customization.fontFamily] || fontFamilyMap.inter,
+      position: 'relative'
+    }
+
+    if (customization.backgroundType === 'image' && customization.backgroundImage?.url) {
+      // For image backgrounds, we'll use a pseudo-element approach
+      // The background will be applied via a separate background div
+      styles.backgroundColor = 'transparent'
+    } else {
+      styles.backgroundColor = customization.backgroundColor || '#ffffff'
+    }
+
+    return styles
+  }
+
+  const getBackgroundImageStyles = () => {
+    const customization = bio?.customization || {}
+    if (customization.backgroundType === 'image' && customization.backgroundImage?.url) {
+      const bgImg = customization.backgroundImage
+      const styles = {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundImage: `url(${bgImg.url})`,
+        backgroundPosition: bgImg.position || 'center',
+        backgroundSize: bgImg.size || 'cover',
+        backgroundRepeat: bgImg.repeat || 'no-repeat',
+        backgroundAttachment: 'fixed',
+        zIndex: 0
+      }
+      
+      // Apply blur effect
+      if (bgImg.blur > 0) {
+        styles.filter = `blur(${bgImg.blur}px)`
+      }
+      
+      // Apply opacity
+      if (bgImg.opacity < 1) {
+        styles.opacity = bgImg.opacity
+      }
+      
+      return styles
+    }
+    return null
+  }
+
+  const getPublicOverlayStyles = () => {
+    const customization = bio?.customization || {}
+    if (customization.backgroundType === 'image' && customization.backgroundImage?.overlay) {
+      return {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: customization.backgroundImage.overlay,
+        zIndex: 1
+      }
+    }
+    return null
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -352,6 +417,47 @@ export function PublicBioPage() {
     playfair: "'Playfair Display', serif"
   }
 
+  // Use blocks system if available, fallback to old format
+  const hasBlocks = bio.blocks && bio.blocks.length > 0
+  
+  if (hasBlocks) {
+    const overlayStyles = getPublicOverlayStyles()
+    const backgroundImageStyles = getBackgroundImageStyles()
+    
+    // New block-based system
+    return (
+      <div style={getPublicBackgroundStyles()}>
+        {/* Background image layer */}
+        {backgroundImageStyles && <div style={backgroundImageStyles} />}
+        
+        {/* Overlay for better text readability */}
+        {overlayStyles && <div style={overlayStyles} />}
+        
+        {/* Header with Share Button */}
+        <div className="fixed top-4 right-4 z-20">
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" onClick={copyBioLink} className="bg-white/80 backdrop-blur-sm">
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={shareBio} className="bg-white/80 backdrop-blur-sm">
+              <Share className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Use the same PreviewContent component */}
+        <div className="max-w-md mx-auto" style={{ position: 'relative', zIndex: 2 }}>
+          <PreviewContent 
+            blocks={bio.blocks.filter(block => block.isActive)} 
+            theme={bio.customization} 
+            username={username}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // Fallback to old format for backward compatibility
   return (
     <div 
       className="py-8 px-4"

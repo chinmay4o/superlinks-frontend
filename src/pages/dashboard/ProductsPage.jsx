@@ -305,7 +305,11 @@ export function ProductsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product) => (
-            <Card key={product._id} className="group hover:shadow-lg transition-all duration-200 hover:border-purple-200 border-2 border-transparent">
+            <Card 
+              key={product._id} 
+              className="group hover:shadow-lg transition-all duration-200 hover:border-purple-200 border-2 border-transparent cursor-pointer"
+              onClick={() => window.open(`/${product.creator.username}/${product.slug}`, '_blank')}
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="space-y-1 flex-1">
@@ -320,11 +324,16 @@ export function ProductsPage() {
                   
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                       <DropdownMenuItem onClick={() => navigate(`/dashboard/products/${product._id}/edit`)}>
                         <Edit className="h-4 w-4 mr-2" />
                         Edit
