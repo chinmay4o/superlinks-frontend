@@ -387,7 +387,7 @@ export function ProductLandingPage() {
             <Card className="p-6 sticky top-8">
               <div className="space-y-4">
                 <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-2">Name a fair price:</p>
+                  <p className="text-sm text-muted-foreground mb-2">Price:</p>
                   <div className="flex items-baseline justify-center gap-2 mb-4">
                     <span className="text-3xl font-bold">
                       {formatPrice(product.discountedPrice || product.price.amount, product.price.currency)}
