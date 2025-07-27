@@ -329,53 +329,6 @@ export function ThankYouPage() {
               </CardContent>
             </Card>
             
-            {/* Next Steps */}
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle>What's Next?</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Mail className="h-5 w-5 text-blue-500 mt-0.5" />
-                  <div>
-                    <h4 className="font-semibold">Check Your Email</h4>
-                    <p className="text-sm text-gray-600">
-                      We've sent your receipt and download links to your email address.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <Star className="h-5 w-5 text-yellow-500 mt-0.5" />
-                  <div>
-                    <h4 className="font-semibold">Leave a Review</h4>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Help others by sharing your experience with this product.
-                    </p>
-                    <Button variant="outline" size="sm">
-                      Write a Review
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <ExternalLink className="h-5 w-5 text-green-500 mt-0.5" />
-                  <div>
-                    <h4 className="font-semibold">Explore More</h4>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Discover more amazing products from {purchase.product.creator.name}.
-                    </p>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to={`/${purchase.product.creator.username}`}>
-                        View Profile
-                        <ArrowRight className="h-4 w-4 ml-1" />
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
             {/* Buyer Login Prompt - Only show if user is not logged in */}
             {!user && (
               <Card className="shadow-lg border-green-200 bg-green-50">
@@ -442,6 +395,53 @@ export function ThankYouPage() {
                 </CardContent>
               </Card>
             )}
+            
+            {/* Next Steps */}
+            <Card className="shadow-lg">
+              <CardHeader>
+                <CardTitle>What's Next?</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <Mail className="h-5 w-5 text-blue-500 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold">Check Your Email</h4>
+                    <p className="text-sm text-gray-600">
+                      We've sent your receipt and download links to your email address.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <Star className="h-5 w-5 text-yellow-500 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold">Leave a Review</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Help others by sharing your experience with this product.
+                    </p>
+                    <Button variant="outline" size="sm">
+                      Write a Review
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <ExternalLink className="h-5 w-5 text-green-500 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold">Explore More</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Discover more amazing products from {purchase.product.creator.name}.
+                    </p>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/${purchase.product.creator.username}`}>
+                        View Profile
+                        <ArrowRight className="h-4 w-4 ml-1" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
             
             {/* Support */}
             <Card className="shadow-lg border-blue-200 bg-blue-50">

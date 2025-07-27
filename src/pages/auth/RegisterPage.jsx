@@ -9,6 +9,7 @@ import { Mail, Lock, User } from 'lucide-react'
 import { useForm } from '../../hooks/useForm'
 import { registerSchema } from '../../lib/validations'
 import toast from 'react-hot-toast'
+import { AnimatedBackground } from '../../components/ui/animated-background'
 
 export function RegisterPage() {
   const navigate = useNavigate()
@@ -41,8 +42,10 @@ export function RegisterPage() {
   const watchedPassword = watch('password', '')
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md space-y-6">
+    <div className="min-h-screen relative overflow-hidden">
+      <AnimatedBackground />
+      <div className="min-h-screen flex items-center justify-center p-4 relative z-10">
+        <div className="w-full max-w-md space-y-6">
         {/* Logo */}
         <div className="text-center">
           <div className="mx-auto h-12 w-12 rounded-lg bg-primary flex items-center justify-center mb-4">
@@ -53,7 +56,7 @@ export function RegisterPage() {
         </div>
 
         {/* Register Form */}
-        <Card>
+        <Card className="backdrop-blur-sm bg-white/95">
           <CardHeader>
             <CardTitle>Sign Up</CardTitle>
             <CardDescription>
@@ -122,6 +125,7 @@ export function RegisterPage() {
             "Just start with what you know, see what sticks, and get paid."
           </p>
         </div>
+      </div>
       </div>
     </div>
   )
