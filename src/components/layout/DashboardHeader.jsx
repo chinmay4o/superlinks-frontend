@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
 import { Input } from '../ui/input'
-import { SimpleThemeToggle } from '../ui/theme-toggle'
+// import { SimpleThemeToggle } from '../ui/theme-toggle'
 import { useAuth } from '../../contexts/AuthContext'
 
 export function DashboardHeader() {
@@ -65,8 +65,8 @@ export function DashboardHeader() {
           </Link>
         </Button> */}
 
-        {/* Theme Toggle */}
-        <SimpleThemeToggle />
+        {/* Theme Toggle - Commented out for now */}
+        {/* <SimpleThemeToggle /> */}
 
         {/* Notifications */}
         <Button variant="ghost" size="icon">

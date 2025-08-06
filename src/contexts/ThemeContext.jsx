@@ -11,22 +11,17 @@ export const useTheme = () => {
 }
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState('dark') // Default to dark theme
+  const [theme, setTheme] = useState('light') // Default to light theme
 
   useEffect(() => {
     // Check for saved theme preference
     const savedTheme = localStorage.getItem('theme')
     
-    // If no saved preference, check system preference, otherwise default to dark
-    let initialTheme = savedTheme
-    if (!savedTheme) {
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      initialTheme = systemPrefersDark ? 'dark' : 'light'
-      // Don't save system preference automatically - let user choose
-    }
+    // If no saved preference, default to light theme (ignore system preference)
+    let initialTheme = savedTheme || 'light'
     
-    setTheme(initialTheme || 'dark')
-    applyTheme(initialTheme || 'dark')
+    setTheme(initialTheme)
+    applyTheme(initialTheme)
   }, [])
 
   const applyTheme = (themeName) => {
