@@ -61,18 +61,18 @@ const navigation = [
     icon: LinkIcon,
     description: 'Create your link-in-bio page'
   },
-  // {
-  //   name: 'Instagram Automation',
-  //   href: '/dashboard/instagram/settings',
-  //   icon: Instagram,
-  //   description: 'Connect Instagram and set up comment funnels'
-  // },
-  // {
-  //   name: 'Comment Funnels',
-  //   href: '/dashboard/instagram/funnels',
-  //   icon: Target,
-  //   description: 'Create and manage Instagram comment funnels'
-  // }
+  {
+    name: 'Instagram Automation',
+    href: '/dashboard/instagram/settings',
+    icon: Instagram,
+    description: 'Connect Instagram and set up comment funnels'
+  },
+  {
+    name: 'Comment Funnels',
+    href: '/dashboard/instagram/funnels',
+    icon: Target,
+    description: 'Create and manage Instagram comment funnels'
+  }
 ]
 
 const settingsNavigation = [
