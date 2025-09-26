@@ -28,6 +28,7 @@ import { DomainSettingsPage } from './pages/dashboard/DomainSettingsPage'
 import { BioBuilderPage } from './pages/dashboard/BioBuilderPage'
 import { InstagramSettings } from './pages/dashboard/InstagramSettings'
 import { InstagramFunnels } from './pages/dashboard/InstagramFunnels'
+import { InstagramCallback } from './pages/dashboard/InstagramCallback'
 
 // Public pages
 import { ProductLandingPage } from './pages/public/ProductLandingPage'
@@ -89,6 +90,7 @@ function App() {
                 <Route path="settings/domain" element={<DomainSettingsPage />} />
                 <Route path="instagram/settings" element={<InstagramSettings />} />
                 <Route path="instagram/funnels" element={<InstagramFunnels />} />
+                <Route path="instagram/callback" element={<InstagramCallback />} />
                 <Route path="content/:id" element={<ContentViewer />} />
               </Route>
               

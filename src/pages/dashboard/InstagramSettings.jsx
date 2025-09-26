@@ -112,12 +112,33 @@ export function InstagramSettings() {
       // Open Instagram OAuth in new window
       const authWindow = window.open(data.authUrl, 'instagram-auth', 'width=500,height=600')
       
-      // Check for authorization completion
+      // Listen for messages from callback window
+      const handleMessage = (event) => {
+        if (event.origin !== window.location.origin) return
+        
+        if (event.data.type === 'INSTAGRAM_AUTH_SUCCESS') {
+          setConnecting(false)
+          toast.success(`Successfully connected Instagram account @${event.data.data.username}`)
+          fetchAccountData()
+          window.removeEventListener('message', handleMessage)
+        } else if (event.data.type === 'INSTAGRAM_AUTH_ERROR') {
+          setConnecting(false)
+          toast.error(event.data.error || 'Failed to connect Instagram account')
+          window.removeEventListener('message', handleMessage)
+        }
+      }
+      
+      window.addEventListener('message', handleMessage)
+      
+      // Fallback: Check if window was closed without message
       const checkAuth = setInterval(() => {
         if (authWindow.closed) {
           clearInterval(checkAuth)
-          setConnecting(false)
-          fetchAccountData()
+          window.removeEventListener('message', handleMessage)
+          if (connecting) {
+            setConnecting(false)
+            fetchAccountData() // Refresh data in case connection succeeded
+          }
         }
       }, 1000)
 
