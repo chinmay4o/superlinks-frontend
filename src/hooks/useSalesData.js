@@ -78,10 +78,10 @@ export const useSalesData = (initialParams = {}) => {
       const data = await salesService.getSalesStats(filters.timeFilter)
       
       setStats({
-        totalPurchases: data.totalPurchases || 0,
-        totalRevenue: data.totalRevenue || 0,
-        completedPurchases: data.completedPurchases || 0,
-        pendingPurchases: data.pendingPurchases || 0
+        totalPurchases: data.stats?.totalSales || 0,
+        totalRevenue: data.stats?.totalRevenue || 0,
+        completedPurchases: data.stats?.completedSales || 0,
+        pendingPurchases: data.stats?.pendingSales || 0
       })
       
     } catch (error) {
