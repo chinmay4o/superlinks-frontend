@@ -21,6 +21,8 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:500
 
 export function DashboardHomePage() {
   const [loading, setLoading] = useState(true)
+  const [statsLoading, setStatsLoading] = useState(true)
+  const [salesLoading, setSalesLoading] = useState(true)
   const [stats, setStats] = useState({
     totalEarnings: 0,
     totalSales: 0,
@@ -34,34 +36,42 @@ export function DashboardHomePage() {
     fetchDashboardData()
   }, [])
 
-  const fetchDashboardData = async () => {
+  // Separate fetch functions for progressive loading
+  const fetchAnalytics = async () => {
     try {
-      setLoading(true)
+      setStatsLoading(true)
+      const response = await fetch(`${API_BASE_URL}/analytics/overview`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
       
-      // Fetch analytics overview
-      const [analyticsResponse, purchasesResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/analytics/overview`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        }),
-        fetch(`${API_BASE_URL}/purchases?limit=5&status=completed`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-      ])
-
-      const analyticsData = await analyticsResponse.json()
-      const purchasesData = await purchasesResponse.json()
-
-      if (analyticsResponse.ok) {
-        setStats(analyticsData)
+      if (response.ok) {
+        const data = await response.json()
+        setStats(data)
       } else {
         toast.error('Failed to load analytics data')
       }
+    } catch (error) {
+      console.error('Error fetching analytics:', error)
+      toast.error('Failed to load analytics data')
+    } finally {
+      setStatsLoading(false)
+    }
+  }
 
-      if (purchasesResponse.ok) {
+  const fetchSalesData = async () => {
+    try {
+      setSalesLoading(true)
+      const response = await fetch(`${API_BASE_URL}/purchases?limit=5&status=completed`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+      
+      if (response.ok) {
+        const purchasesData = await response.json()
+        
         // Transform purchases data for recent sales
         const transformedSales = purchasesData.purchases.map(purchase => ({
           id: purchase._id,
@@ -72,7 +82,7 @@ export function DashboardHomePage() {
         }))
         setRecentSales(transformedSales)
 
-        // Calculate top products from purchases (temporary solution)
+        // Calculate top products from purchases
         const productStats = {}
         purchasesData.purchases.forEach(purchase => {
           if (purchase.product) {
@@ -100,22 +110,118 @@ export function DashboardHomePage() {
       } else {
         toast.error('Failed to load recent sales')
       }
-      
     } catch (error) {
-      console.error('Error fetching dashboard data:', error)
-      toast.error('Failed to load dashboard data')
+      console.error('Error fetching sales data:', error)
+      toast.error('Failed to load sales data')
     } finally {
+      setSalesLoading(false)
+    }
+  }
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true)
+      
+      // Start both requests simultaneously but don't wait for both
+      fetchAnalytics()
+      fetchSalesData()
+      
+      // Set main loading to false immediately so UI renders
+      setLoading(false)
+    } catch (error) {
+      console.error('Error initializing dashboard:', error)
       setLoading(false)
     }
   }
 
+  // Skeleton components for better loading experience
+  const StatsSkeleton = () => (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {Array.from({ length: 4 }, (_, i) => (
+        <Card key={i} className="border-0 bg-gradient-to-br from-gray-50 to-gray-100">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse"></div>
+          </CardHeader>
+          <CardContent>
+            <div className="h-8 w-20 bg-gray-200 rounded animate-pulse mb-2"></div>
+            <div className="h-3 w-32 bg-gray-200 rounded animate-pulse"></div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  )
+
+  const CardSkeleton = ({ title }) => (
+    <Card className="border-0 bg-gradient-to-br from-gray-50 to-gray-100">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <div className="h-5 w-32 bg-gray-200 rounded animate-pulse mb-2"></div>
+          <div className="h-4 w-48 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {Array.from({ length: 3 }, (_, i) => (
+            <div key={i} className="flex items-center justify-between">
+              <div className="space-y-2">
+                <div className="h-4 w-40 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-3 w-32 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+              <div className="text-right space-y-2">
+                <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-3 w-20 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Loading dashboard...</p>
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground">
+              Welcome back! Here's what's happening with your store today.
+            </p>
+          </div>
+          <Button className={`gap-2 bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}>
+            <Plus className="h-4 w-4" />
+            Create Product
+          </Button>
         </div>
+
+        {/* Stats Cards Skeleton */}
+        <StatsSkeleton />
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Recent Sales Skeleton */}
+          <CardSkeleton title="Recent Sales" />
+          
+          {/* Top Products Skeleton */}
+          <CardSkeleton title="Top Products" />
+        </div>
+
+        {/* Quick Actions Skeleton */}
+        <Card className="border-0 bg-gradient-to-r from-gray-50 to-gray-100">
+          <CardHeader>
+            <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-2"></div>
+            <div className="h-4 w-64 bg-gray-200 rounded animate-pulse"></div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              {Array.from({ length: 3 }, (_, i) => (
+                <div key={i} className="h-32 bg-gray-200 rounded animate-pulse"></div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -147,10 +253,19 @@ export function DashboardHomePage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${dashboardColors.earnings.text}`}>{formatCurrency(stats.totalEarnings || 0)}</div>
-            <p className={`text-xs ${dashboardColors.earnings.subtext}`}>
-              Lifetime earnings
-            </p>
+            {statsLoading ? (
+              <div className="space-y-2">
+                <div className="h-8 w-20 bg-white/20 rounded animate-pulse"></div>
+                <div className="h-3 w-24 bg-white/20 rounded animate-pulse"></div>
+              </div>
+            ) : (
+              <>
+                <div className={`text-2xl font-bold ${dashboardColors.earnings.text}`}>{formatCurrency(stats.totalEarnings || 0)}</div>
+                <p className={`text-xs ${dashboardColors.earnings.subtext}`}>
+                  Lifetime earnings
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -162,10 +277,19 @@ export function DashboardHomePage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${dashboardColors.sales.text}`}>{formatNumber(stats.totalSales || 0)}</div>
-            <p className={`text-xs ${dashboardColors.sales.subtext}`}>
-              Total completed sales
-            </p>
+            {statsLoading ? (
+              <div className="space-y-2">
+                <div className="h-8 w-16 bg-white/20 rounded animate-pulse"></div>
+                <div className="h-3 w-32 bg-white/20 rounded animate-pulse"></div>
+              </div>
+            ) : (
+              <>
+                <div className={`text-2xl font-bold ${dashboardColors.sales.text}`}>{formatNumber(stats.totalSales || 0)}</div>
+                <p className={`text-xs ${dashboardColors.sales.subtext}`}>
+                  Total completed sales
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -177,10 +301,19 @@ export function DashboardHomePage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${dashboardColors.products.text}`}>{stats.totalProducts || 0}</div>
-            <p className={`text-xs ${dashboardColors.products.subtext}`}>
-              Published products
-            </p>
+            {statsLoading ? (
+              <div className="space-y-2">
+                <div className="h-8 w-12 bg-white/20 rounded animate-pulse"></div>
+                <div className="h-3 w-28 bg-white/20 rounded animate-pulse"></div>
+              </div>
+            ) : (
+              <>
+                <div className={`text-2xl font-bold ${dashboardColors.products.text}`}>{stats.totalProducts || 0}</div>
+                <p className={`text-xs ${dashboardColors.products.subtext}`}>
+                  Published products
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -192,10 +325,19 @@ export function DashboardHomePage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${dashboardColors.views.text}`}>{formatNumber(stats.totalViews || 0)}</div>
-            <p className={`text-xs ${dashboardColors.views.subtext}`}>
-              Total product views
-            </p>
+            {statsLoading ? (
+              <div className="space-y-2">
+                <div className="h-8 w-16 bg-white/20 rounded animate-pulse"></div>
+                <div className="h-3 w-32 bg-white/20 rounded animate-pulse"></div>
+              </div>
+            ) : (
+              <>
+                <div className={`text-2xl font-bold ${dashboardColors.views.text}`}>{formatNumber(stats.totalViews || 0)}</div>
+                <p className={`text-xs ${dashboardColors.views.subtext}`}>
+                  Total product views
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -217,7 +359,20 @@ export function DashboardHomePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentSales.length > 0 ? (
+              {salesLoading ? (
+                Array.from({ length: 3 }, (_, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <div className="h-4 w-40 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-3 w-32 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                    <div className="text-right space-y-2">
+                      <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-3 w-20 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                  </div>
+                ))
+              ) : recentSales.length > 0 ? (
                 recentSales.map((sale) => (
                   <div key={sale.id} className="flex items-center justify-between">
                     <div className="space-y-1">
@@ -259,7 +414,23 @@ export function DashboardHomePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topProducts.length > 0 ? (
+              {salesLoading ? (
+                Array.from({ length: 3 }, (_, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-8 w-8 bg-gray-200 rounded-lg animate-pulse"></div>
+                      <div className="space-y-2">
+                        <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                        <div className="h-3 w-24 bg-gray-200 rounded animate-pulse"></div>
+                      </div>
+                    </div>
+                    <div className="text-right space-y-2">
+                      <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-3 w-12 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                  </div>
+                ))
+              ) : topProducts.length > 0 ? (
                 topProducts.map((product, index) => (
                   <div key={product.id} className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">

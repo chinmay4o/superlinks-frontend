@@ -1,4 +1,5 @@
 import axios from 'axios';
+import cacheService from './cacheService';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5005/api';
 
@@ -33,9 +34,20 @@ api.interceptors.response.use(
 );
 
 const productService = {
-  // Get user's products
+  // Get user's products with caching
   getProducts: async (params = {}) => {
+    const cacheKey = cacheService.generateKey('/products', params);
+    const cached = cacheService.get(cacheKey);
+    
+    if (cached) {
+      return cached;
+    }
+    
     const response = await api.get('/products', { params });
+    
+    // Cache for 2 minutes for user's own products
+    cacheService.set(cacheKey, response.data, 2 * 60 * 1000);
+    
     return response.data;
   },
 
@@ -51,9 +63,20 @@ const productService = {
     return response.data;
   },
 
-  // Get public products by username
+  // Get public products by username with caching
   getPublicProducts: async (username, params = {}) => {
+    const cacheKey = cacheService.generateKey(`/products/public/${username}`, params);
+    const cached = cacheService.get(cacheKey);
+    
+    if (cached) {
+      return cached;
+    }
+    
     const response = await api.get(`/products/public/${username}`, { params });
+    
+    // Cache for 5 minutes for public products
+    cacheService.set(cacheKey, response.data, 5 * 60 * 1000);
+    
     return response.data;
   },
 
@@ -66,12 +89,21 @@ const productService = {
   // Create new product
   createProduct: async (productData) => {
     const response = await api.post('/products', productData);
+    
+    // Clear products cache
+    cacheService.clearByPattern('/products');
+    
     return response.data;
   },
 
   // Update product
   updateProduct: async (id, productData) => {
     const response = await api.put(`/products/${id}`, productData);
+    
+    // Clear related cache entries
+    cacheService.clearByPattern('/products');
+    cacheService.clearByPattern(`/products/${id}`);
+    
     return response.data;
   },
 

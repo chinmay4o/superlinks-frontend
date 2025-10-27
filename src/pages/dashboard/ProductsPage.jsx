@@ -123,12 +123,30 @@ export function ProductsPage() {
 
   const getStatusBadge = (product) => {
     if (product.isArchived) {
-      return <Badge variant="secondary" className="bg-gray-100 text-gray-700">Archived</Badge>
+      return (
+        <Badge className="bg-gray-500 text-white border-0 shadow-sm font-medium px-2.5 py-1">
+          Archived
+        </Badge>
+      )
     }
     if (product.isPublished) {
-      return <Badge className="bg-green-100 text-green-700 border-green-300">Published</Badge>
+      return (
+        <Badge className="bg-green-500 text-white border-0 shadow-sm font-medium px-2.5 py-1">
+          <div className="flex items-center space-x-1">
+            <div className="h-1.5 w-1.5 bg-white rounded-full"></div>
+            <span>Live</span>
+          </div>
+        </Badge>
+      )
     }
-    return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-300">Draft</Badge>
+    return (
+      <Badge className="bg-orange-500 text-white border-0 shadow-sm font-medium px-2.5 py-1">
+        <div className="flex items-center space-x-1">
+          <Edit className="h-3 w-3" />
+          <span>Draft</span>
+        </div>
+      </Badge>
+    )
   }
 
   const formatCurrency = (amount, currency = 'INR') => {
@@ -136,12 +154,112 @@ export function ProductsPage() {
     return `${symbols[currency] || currency} ${amount}`
   }
 
+  // Loading skeleton component matching the new design
+  const ProductSkeleton = () => (
+    <Card className="border border-gray-200 bg-white overflow-hidden">
+      {/* Cover Image Skeleton */}
+      <div className="relative">
+        <div className="aspect-[16/10] w-full bg-gray-200 animate-pulse"></div>
+        
+        {/* Status Badge Skeleton */}
+        <div className="absolute top-3 left-3">
+          <div className="h-6 w-16 bg-gray-300 rounded-full animate-pulse"></div>
+        </div>
+        
+        {/* Menu Button Skeleton */}
+        <div className="absolute top-3 right-3">
+          <div className="h-8 w-8 bg-gray-300 rounded animate-pulse"></div>
+        </div>
+      </div>
+
+      {/* Content Skeleton */}
+      <div className="p-5 space-y-4">
+        {/* Title and Category */}
+        <div className="space-y-2">
+          <div className="h-6 bg-gray-200 rounded animate-pulse w-3/4"></div>
+          <div className="h-5 bg-gray-200 rounded animate-pulse w-20"></div>
+        </div>
+        
+        {/* Description */}
+        <div className="space-y-2">
+          <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
+        </div>
+        
+        {/* Stats */}
+        <div className="flex justify-between items-center">
+          <div className="h-6 bg-gray-200 rounded animate-pulse w-16"></div>
+          <div className="space-y-1">
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-12"></div>
+            <div className="h-3 bg-gray-200 rounded animate-pulse w-16"></div>
+          </div>
+        </div>
+        
+        <div className="flex space-x-2">
+          <div className="h-3 bg-gray-200 rounded animate-pulse w-16"></div>
+          <div className="h-3 bg-gray-200 rounded animate-pulse w-20"></div>
+        </div>
+        
+        {/* Action Buttons */}
+        <div className="flex gap-2 pt-2">
+          <div className="h-9 bg-gray-200 rounded animate-pulse flex-1"></div>
+          <div className="h-9 bg-gray-200 rounded animate-pulse flex-1"></div>
+        </div>
+      </div>
+    </Card>
+  )
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading products...</p>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Products</h1>
+            <p className="text-muted-foreground">
+              Manage your digital products and track their performance
+            </p>
+          </div>
+          <Button className={`bg-gradient-to-r ${dashboardColors.primaryButton.gradient} text-white border-0 ${dashboardColors.primaryButton.shadow}`}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Product
+          </Button>
+        </div>
+
+        {/* Stats Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }, (_, i) => (
+            <Card key={i} className="border-0 bg-gradient-to-br from-gray-50 to-gray-100">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                  <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Filters Skeleton */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 h-10 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-48 h-10 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-48 h-10 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-24 h-10 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Products Grid Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+          {Array.from({ length: 8 }, (_, i) => (
+            <ProductSkeleton key={i} />
+          ))}
         </div>
       </div>
     )
@@ -303,44 +421,54 @@ export function ProductsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {products.map((product) => (
             <Card 
               key={product._id} 
-              className="group hover:shadow-lg transition-all duration-200 hover:border-purple-200 border-2 border-transparent cursor-pointer"
-              onClick={() => window.open(`/${product.creator.username}/${product.slug}`, '_blank')}
+              className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-200 hover:border-primary/30 bg-white overflow-hidden relative"
             >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1 flex-1">
-                    <CardTitle className="text-lg line-clamp-2">{product.title}</CardTitle>
-                    <div className="flex items-center space-x-2">
-                      {getStatusBadge(product)}
-                      <Badge variant="outline" className="text-xs">
-                        {PRODUCT_CATEGORIES.find(c => c.value === product.category)?.label || product.category}
-                      </Badge>
-                    </div>
+              {/* Card Header with Status and Menu */}
+              <div className="relative">
+                {/* Cover Image */}
+                {product.images?.cover ? (
+                  <div className="aspect-[16/10] w-full bg-muted overflow-hidden">
+                    <img 
+                      src={product.images.cover.url} 
+                      alt={product.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
                   </div>
-                  
+                ) : (
+                  <div className="aspect-[16/10] w-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                    <Package className="h-12 w-12 text-gray-400" />
+                  </div>
+                )}
+                
+                {/* Status Badge Overlay */}
+                <div className="absolute top-3 left-3">
+                  {getStatusBadge(product)}
+                </div>
+                
+                {/* Quick Actions Menu */}
+                <div className="absolute top-3 right-3">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button 
-                        variant="ghost" 
+                        variant="secondary" 
                         size="sm" 
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => e.stopPropagation()}
+                        className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md backdrop-blur-sm"
                       >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => navigate(`/dashboard/products/${product._id}/edit`)}>
                         <Edit className="h-4 w-4 mr-2" />
-                        Edit
+                        Edit Product
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate(`/dashboard/products/${product._id}`)}>
                         <Eye className="h-4 w-4 mr-2" />
-                        View
+                        View Details
                       </DropdownMenuItem>
                       {product.isPublished && (
                         <>
@@ -365,42 +493,87 @@ export function ProductsPage() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              </CardHeader>
-              
-              <CardContent>
-                <div className="space-y-4">
-                  {product.images?.cover && (
-                    <div className="aspect-video w-full bg-muted rounded-lg overflow-hidden">
-                      <img 
-                        src={product.images.cover.url} 
-                        alt={product.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  
-                  <p className="text-sm text-muted-foreground line-clamp-3">
-                    {product.shortDescription || product.description}
-                  </p>
-                  
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="space-y-1">
-                      <div className="flex items-center space-x-4">
-                        <span className="font-semibold">
-                          {formatCurrency(product.price.amount, product.price.currency)}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {product.stats?.sales || 0} sales
-                        </span>
+              </div>
+
+              {/* Card Content */}
+              <div className="p-5">
+                {/* Title and Category */}
+                <div className="space-y-2 mb-4">
+                  <h3 className="font-semibold text-lg leading-tight line-clamp-2 text-gray-900">
+                    {product.title}
+                  </h3>
+                  <Badge variant="outline" className="text-xs w-fit">
+                    {PRODUCT_CATEGORIES.find(c => c.value === product.category)?.label || product.category}
+                  </Badge>
+                </div>
+                
+                {/* Description */}
+                <p className="text-sm text-gray-600 line-clamp-2 mb-4">
+                  {product.shortDescription || product.description}
+                </p>
+                
+                {/* Stats and Price */}
+                <div className="space-y-3 mb-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xl font-bold text-gray-900">
+                      {formatCurrency(product.price.amount, product.price.currency)}
+                    </span>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-gray-900">
+                        {product.stats?.sales || 0} sales
                       </div>
-                      <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-                        <span>{product.stats?.views || 0} views</span>
-                        <span>₹{(product.stats?.revenue || 0).toLocaleString()} revenue</span>
+                      <div className="text-xs text-gray-500">
+                        ₹{(product.stats?.revenue || 0).toLocaleString()} revenue
                       </div>
                     </div>
                   </div>
+                  
+                  <div className="flex items-center space-x-4 text-xs text-gray-500">
+                    <div className="flex items-center space-x-1">
+                      <Eye className="h-3 w-3" />
+                      <span>{product.stats?.views || 0} views</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Users className="h-3 w-3" />
+                      <span>{((product.stats?.sales || 0) / Math.max(product.stats?.views || 1, 1) * 100).toFixed(1)}% conversion</span>
+                    </div>
+                  </div>
                 </div>
-              </CardContent>
+                
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => navigate(`/dashboard/products/${product._id}/edit`)}
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white h-9"
+                    size="sm"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
+                  
+                  {product.isPublished ? (
+                    <Button 
+                      onClick={() => window.open(`/${product.creator.username}/${product.slug}`, '_blank')}
+                      variant="outline"
+                      className="flex-1 h-9 border-primary/20 hover:border-primary/40 hover:bg-primary/5"
+                      size="sm"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      View Live
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={() => navigate(`/dashboard/products/${product._id}`)}
+                      variant="outline"
+                      className="flex-1 h-9"
+                      size="sm"
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      Preview
+                    </Button>
+                  )}
+                </div>
+              </div>
             </Card>
           ))}
         </div>
