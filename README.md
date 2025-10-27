@@ -1,4 +1,6 @@
-# Superlinks.ai Frontend
+# Superlinks.ai
+visit - www.superlinks.ai (landing page)
+App - https://app.superlinks.ai (SaaS tool)
 
 A modern React-based frontend for Superlinks.ai - a platform that helps creators, educators, and individuals monetize their knowledge by selling digital products online.
 
