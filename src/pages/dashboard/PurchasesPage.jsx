@@ -5,6 +5,7 @@ import { Input } from '../../components/ui/input'
 import { Badge } from '../../components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
 import { Separator } from '../../components/ui/separator'
+import { SalesTableSkeleton } from '../../components/ui/table-skeleton'
 import { 
   Search, 
   Filter, 
@@ -32,6 +33,7 @@ import {
 import { Checkbox } from '../../components/ui/checkbox'
 import { toast } from 'react-hot-toast'
 import { dashboardColors } from '../../lib/dashboardColors'
+import { useSalesData } from '../../hooks/useSalesData'
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5005/api'
 
@@ -53,112 +55,71 @@ const TIME_FILTERS = [
 ]
 
 export function PurchasesPage() {
-  const [purchases, setPurchases] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [selectedPurchase, setSelectedPurchase] = useState(null)
+  // Use the new sales data hook for optimized data management
+  const {
+    purchases,
+    stats,
+    selectedPurchase,
+    pagination,
+    filters,
+    loading,
+    statsLoading,
+    purchasesLoading,
+    error,
+    updateFilters,
+    changePage,
+    refresh,
+    getPurchaseDetails,
+    updatePurchaseStatus,
+    processRefund,
+    exportPurchases,
+    sendCustomerEmail,
+    setSelectedPurchase
+  } = useSalesData()
+  
+  // Local UI state
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedItems, setSelectedItems] = useState([])
   const [selectAll, setSelectAll] = useState(false)
-  
-  // Filters
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [timeFilter, setTimeFilter] = useState('all')
   const [productFilter, setProductFilter] = useState('all')
   
-  // Pagination
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    total: 0,
-    limit: 20
-  })
+  // Handle filter changes with debouncing
+  const handleFilterChange = useCallback((newFilters) => {
+    updateFilters(newFilters)
+  }, [updateFilters])
   
-  // Stats
-  const [stats, setStats] = useState({
-    totalPurchases: 0,
-    totalRevenue: 0,
-    completedPurchases: 0,
-    pendingPurchases: 0
-  })
-  
-  const fetchPurchases = useCallback(async () => {
-    try {
-      setLoading(true)
-      const params = new URLSearchParams({
-        page: pagination.currentPage,
-        limit: pagination.limit,
-        ...(statusFilter !== 'all' && { status: statusFilter }),
-        ...(timeFilter !== 'all' && { timeFilter }),
-        ...(productFilter !== 'all' && { product: productFilter }),
-        ...(searchTerm && { search: searchTerm })
-      })
-      
-      const response = await fetch(`${API_BASE_URL}/purchases?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-      
-      const data = await response.json()
-      
-      if (response.ok) {
-        setPurchases(data.purchases || [])
-        setPagination({
-          currentPage: data.currentPage || 1,
-          totalPages: data.totalPages || 1,
-          total: data.total || 0,
-          limit: pagination.limit
-        })
-        
-        // Calculate stats
-        calculateStats(data.purchases || [])
-      } else {
-        throw new Error(data.message || 'Failed to fetch purchases')
-      }
-    } catch (error) {
-      console.error('Error fetching purchases:', error)
-      toast.error('Failed to load purchases')
-      setPurchases([])
-    } finally {
-      setLoading(false)
-    }
-  }, [statusFilter, timeFilter, productFilter, pagination.currentPage, searchTerm, pagination.limit])
-
+  // Sync local filter state with global state
   useEffect(() => {
-    fetchPurchases()
-  }, [fetchPurchases])
-  
-  const calculateStats = (purchaseList) => {
-    const stats = purchaseList.reduce((acc, purchase) => {
-      acc.totalPurchases++
-      acc.totalRevenue += purchase.amount || 0
-      
-      if (purchase.status === 'completed') {
-        acc.completedPurchases++
-      } else if (purchase.status === 'pending') {
-        acc.pendingPurchases++
-      }
-      
-      return acc
-    }, {
-      totalPurchases: 0,
-      totalRevenue: 0,
-      completedPurchases: 0,
-      pendingPurchases: 0
-    })
-    
-    setStats(stats)
-  }
+    if (filters) {
+      setSearchTerm(filters.search || '')
+      setStatusFilter(filters.status || 'all')
+      setTimeFilter(filters.timeFilter || 'all')
+      setProductFilter(filters.product || 'all')
+    }
+  }, [filters])
   
   const handleSearch = () => {
-    setPagination(prev => ({ ...prev, currentPage: 1 }))
-    fetchPurchases()
+    handleFilterChange({
+      search: searchTerm,
+      status: statusFilter,
+      timeFilter: timeFilter,
+      product: productFilter,
+      page: 1
+    })
   }
   
-  const handlePurchaseClick = (purchase) => {
-    setSelectedPurchase(purchase)
-    setSidebarOpen(true)
+  const handlePurchaseClick = async (purchase) => {
+    try {
+      const detailedPurchase = await getPurchaseDetails(purchase.purchaseId)
+      setSidebarOpen(true)
+    } catch (error) {
+      // If details fail to load, use basic purchase data
+      setSelectedPurchase(purchase)
+      setSidebarOpen(true)
+    }
   }
   
   const closeSidebar = () => {
@@ -368,13 +329,63 @@ export function PurchasesPage() {
     }
   }
   
+  // Progressive loading with skeleton UI
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading sales...</p>
+      <div className="space-y-6 relative">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Sales</h1>
+            <p className="text-muted-foreground">
+              Track and manage customer transactions
+            </p>
+          </div>
+          <Button variant="outline" className="hover:bg-purple-50 hover:border-purple-300">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
         </div>
+        
+        {/* Stats Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }, (_, i) => (
+            <Card key={i} className="border-0 bg-gradient-to-br from-gray-50 to-gray-100">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                  <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        
+        {/* Filters Skeleton */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 h-10 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-48 h-10 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-48 h-10 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-24 h-10 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Table Skeleton */}
+        <Card>
+          <CardHeader>
+            <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-4 w-48 bg-gray-200 rounded animate-pulse"></div>
+          </CardHeader>
+          <CardContent>
+            <SalesTableSkeleton />
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -389,20 +400,24 @@ export function PurchasesPage() {
             Track and manage customer transactions
           </p>
         </div>
-        <Button onClick={fetchPurchases} variant="outline" className="hover:bg-purple-50 hover:border-purple-300">
+        <Button onClick={refresh} variant="outline" className="hover:bg-purple-50 hover:border-purple-300">
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
         </Button>
       </div>
       
-      {/* Stats Cards */}
+      {/* Stats Cards with progressive loading */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className={`border-0 bg-gradient-to-br ${dashboardColors.sales.gradient}`}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className={`text-sm ${dashboardColors.sales.subtext}`}>Total Sales</p>
-                <p className={`text-2xl font-bold ${dashboardColors.sales.text}`}>{stats.totalPurchases}</p>
+                {statsLoading ? (
+                  <div className="h-8 w-16 bg-white/20 rounded animate-pulse"></div>
+                ) : (
+                  <p className={`text-2xl font-bold ${dashboardColors.sales.text}`}>{stats.totalPurchases}</p>
+                )}
               </div>
               <div className={`h-8 w-8 rounded-full ${dashboardColors.sales.icon} flex items-center justify-center`}>
                 <Package className="h-4 w-4 text-white" />
@@ -416,9 +431,13 @@ export function PurchasesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className={`text-sm ${dashboardColors.earnings.subtext}`}>Total Revenue</p>
-                <p className={`text-2xl font-bold ${dashboardColors.earnings.text}`}>
-                  {formatCurrency(stats.totalRevenue)}
-                </p>
+                {statsLoading ? (
+                  <div className="h-8 w-20 bg-white/20 rounded animate-pulse"></div>
+                ) : (
+                  <p className={`text-2xl font-bold ${dashboardColors.earnings.text}`}>
+                    {formatCurrency(stats.totalRevenue)}
+                  </p>
+                )}
               </div>
               <div className={`h-8 w-8 rounded-full ${dashboardColors.earnings.icon} flex items-center justify-center`}>
                 <DollarSign className="h-4 w-4 text-white" />
@@ -432,7 +451,11 @@ export function PurchasesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className={`text-sm ${dashboardColors.success.text}`}>Completed</p>
-                <p className={`text-2xl font-bold ${dashboardColors.success.text}`}>{stats.completedPurchases}</p>
+                {statsLoading ? (
+                  <div className="h-8 w-16 bg-white/20 rounded animate-pulse"></div>
+                ) : (
+                  <p className={`text-2xl font-bold ${dashboardColors.success.text}`}>{stats.completedPurchases}</p>
+                )}
               </div>
               <div className={`h-8 w-8 rounded-full ${dashboardColors.earnings.icon} flex items-center justify-center`}>
                 <Check className="h-4 w-4 text-white" />
@@ -446,7 +469,11 @@ export function PurchasesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className={`text-sm ${dashboardColors.warning.text}`}>Pending</p>
-                <p className={`text-2xl font-bold ${dashboardColors.warning.text}`}>{stats.pendingPurchases}</p>
+                {statsLoading ? (
+                  <div className="h-8 w-16 bg-white/20 rounded animate-pulse"></div>
+                ) : (
+                  <p className={`text-2xl font-bold ${dashboardColors.warning.text}`}>{stats.pendingPurchases}</p>
+                )}
               </div>
               <div className={`h-8 w-8 rounded-full bg-yellow-500 flex items-center justify-center`}>
                 <Calendar className="h-4 w-4 text-white" />
@@ -473,7 +500,10 @@ export function PurchasesPage() {
               </div>
             </div>
             
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(value) => {
+              setStatusFilter(value)
+              handleFilterChange({ status: value })
+            }}>
               <SelectTrigger className="w-full sm:w-48">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -486,7 +516,10 @@ export function PurchasesPage() {
               </SelectContent>
             </Select>
             
-            <Select value={timeFilter} onValueChange={setTimeFilter}>
+            <Select value={timeFilter} onValueChange={(value) => {
+              setTimeFilter(value)
+              handleFilterChange({ timeFilter: value })
+            }}>
               <SelectTrigger className="w-full sm:w-48">
                 <SelectValue placeholder="Time" />
               </SelectTrigger>
@@ -553,7 +586,9 @@ export function PurchasesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {purchases.length === 0 ? (
+          {purchasesLoading ? (
+            <SalesTableSkeleton />
+          ) : purchases.length === 0 ? (
             <div className="text-center py-12">
               <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No sales found</h3>
@@ -766,7 +801,7 @@ export function PurchasesPage() {
         <div className="flex items-center justify-center space-x-2">
           <Button
             variant="outline"
-            onClick={() => setPagination(prev => ({ ...prev, currentPage: prev.currentPage - 1 }))}
+            onClick={() => changePage(pagination.currentPage - 1)}
             disabled={pagination.currentPage === 1}
             className="hover:bg-purple-50 hover:border-purple-300"
           >
@@ -781,7 +816,7 @@ export function PurchasesPage() {
                   key={page}
                   variant={pagination.currentPage === page ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setPagination(prev => ({ ...prev, currentPage: page }))}
+                  onClick={() => changePage(page)}
                 >
                   {page}
                 </Button>
@@ -791,7 +826,7 @@ export function PurchasesPage() {
           
           <Button
             variant="outline"
-            onClick={() => setPagination(prev => ({ ...prev, currentPage: prev.currentPage + 1 }))}
+            onClick={() => changePage(pagination.currentPage + 1)}
             disabled={pagination.currentPage === pagination.totalPages}
             className="hover:bg-purple-50 hover:border-purple-300"
           >

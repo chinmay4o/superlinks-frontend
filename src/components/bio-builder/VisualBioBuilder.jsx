@@ -6,42 +6,50 @@ import { useAuth } from '../../contexts/AuthContext'
 import BlocksPanel from './BlocksPanel/BlocksPanel'
 import MobilePreview from './MobilePreview/MobilePreview'
 import PropertiesPanel from './PropertiesPanel/PropertiesPanel'
+import { BioBuilderSkeleton, BlocksSkeleton, PreviewSkeleton, PropertiesSkeleton } from '../ui/bio-skeleton'
+import { useBioData } from '../../hooks/useBioData'
 import { useDebouncedCallback } from '../../hooks/useDebounce'
 import toast from 'react-hot-toast'
 import './VisualBioBuilder.css'
 
-const API_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5005/api'
 
 export default function VisualBioBuilder() {
   const { user } = useAuth()
-  const [blocks, setBlocks] = useState([])
-  const [selectedBlock, setSelectedBlock] = useState(null)
-  const [bio, setBio] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  
+  // Use the new bio data hook for optimized data management
+  const {
+    bio,
+    blocks,
+    selectedBlock,
+    loading,
+    bioLoading,
+    blocksLoading,
+    saving,
+    error,
+    hasUnsavedChanges,
+    updateBioProfile,
+    updateBioCustomization,
+    addBlock,
+    updateBlock,
+    deleteBlock,
+    reorderBlocks,
+    toggleBlockVisibility,
+    uploadBioImage,
+    refresh,
+    saveChanges,
+    setSelectedBlock,
+    setHasUnsavedChanges
+  } = useBioData()
+  
   const [previewKey, setPreviewKey] = useState(0)
 
-  // Debounced save function for customization updates
+  // Debounced save function for customization updates - now uses the hook
   const debouncedSaveCustomization = useDebouncedCallback(async (customizationData) => {
     try {
-      const response = await fetch(`${API_URL}/bio/customization`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(customizationData)
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to save customization')
-      }
-      
-      const data = await response.json()
-      console.log('Customization saved:', data.message)
+      await updateBioCustomization(customizationData)
     } catch (error) {
+      // Error handling is done in the hook
       console.error('Error saving customization:', error)
-      toast.error('Failed to save customization')
     }
   }, 500) // 500ms delay
 
@@ -52,87 +60,10 @@ export default function VisualBioBuilder() {
     })
   )
 
-  useEffect(() => {
-    fetchBio()
-  }, [])
+  // Bio data is now loaded automatically by the hook
+  // No need for manual fetch here
 
-  const fetchBio = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch(`${API_URL}/bio`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-      
-      const data = await response.json()
-      
-      if (response.ok) {
-        setBio(data.bio)
-        // Use blocks from API response, or convert old format if needed
-        const loadedBlocks = data.bio.blocks || convertBioToBlocks(data.bio)
-        setBlocks(loadedBlocks)
-        
-        // Automatically select the first block if available
-        if (loadedBlocks.length > 0) {
-          setSelectedBlock(loadedBlocks[0])
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching bio:', error)
-      toast.error('Failed to load bio')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const convertBioToBlocks = (bioData) => {
-    const blocks = []
-    
-    // Header block
-    if (bioData.profile) {
-      blocks.push({
-        id: 'header-' + Date.now(),
-        type: 'header',
-        order: 0,
-        isActive: true,
-        content: {
-          avatar: bioData.profile.avatar,
-          title: bioData.profile.title,
-          description: bioData.profile.description,
-          location: bioData.profile.location
-        }
-      })
-    }
-
-    // Links block
-    if (bioData.links && bioData.links.length > 0) {
-      blocks.push({
-        id: 'links-' + Date.now(),
-        type: 'links',
-        order: 1,
-        isActive: true,
-        content: {
-          links: bioData.links
-        }
-      })
-    }
-
-    // Social links block
-    if (bioData.socialLinks && Object.values(bioData.socialLinks).some(url => url)) {
-      blocks.push({
-        id: 'social-' + Date.now(),
-        type: 'social',
-        order: 2,
-        isActive: true,
-        content: {
-          links: bioData.socialLinks
-        }
-      })
-    }
-
-    return blocks
-  }
+  // convertBioToBlocks function is now handled by the hook
 
   const handleDragEnd = async (event) => {
     const { active, over } = event
@@ -143,81 +74,27 @@ export default function VisualBioBuilder() {
       const newIndex = oldBlocks.findIndex(item => item.id === over.id)
       
       const newBlocks = arrayMove(oldBlocks, oldIndex, newIndex)
-      const blockOrders = newBlocks.map((block, index) => ({
-        id: block.id,
-        order: index
-      }))
-
-      // Optimistically update UI
-      setBlocks(newBlocks.map((block, index) => ({
-        ...block,
-        order: index
-      })))
+      
+      // Use the hook's reorder function which handles optimistic updates
+      await reorderBlocks(newBlocks)
       setPreviewKey(prev => prev + 1)
-
-      // Update backend
-      try {
-        console.log('Sending blockOrders:', blockOrders)
-        const response = await fetch(`${API_URL}/bio/blocks/reorder`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({ blockOrders })
-        })
-
-        const data = await response.json()
-
-        if (response.ok) {
-          setBlocks(data.bio.blocks || [])
-          setBio(data.bio)
-        } else {
-          // Revert on error
-          setBlocks(oldBlocks)
-          toast.error(data.message || 'Failed to reorder blocks')
-        }
-      } catch (error) {
-        // Revert on error
-        setBlocks(oldBlocks)
-        console.error('Error reordering blocks:', error)
-        toast.error('Failed to reorder blocks')
-      }
     }
   }
 
-  const addBlock = async (blockType) => {
+  const handleAddBlock = async (blockType) => {
     try {
       const blockTemplate = createNewBlock(blockType)
       
-      const response = await fetch(`${API_URL}/bio/blocks`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          type: blockType,
-          content: blockTemplate.content,
-          settings: blockTemplate.settings,
-          order: blocks.length
-        })
+      await addBlock({
+        type: blockType,
+        content: blockTemplate.content,
+        settings: blockTemplate.settings
       })
       
-      const data = await response.json()
-      
-      if (response.ok) {
-        setBlocks(data.bio.blocks || [])
-        setBio(data.bio)
-        setSelectedBlock(data.block)
-        setPreviewKey(prev => prev + 1)
-        // toast.success(`${blockType} block added`) // Disabled to reduce toast spam
-      } else {
-        toast.error(data.message || 'Failed to add block')
-      }
+      setPreviewKey(prev => prev + 1)
     } catch (error) {
+      // Error handling is done in the hook
       console.error('Error adding block:', error)
-      toast.error('Failed to add block')
     }
   }
 
@@ -303,143 +180,45 @@ export default function VisualBioBuilder() {
     }
   }
 
-  const updateBlock = async (blockId, updates) => {
+  const handleUpdateBlock = async (blockId, updates) => {
     try {
-      // Optimistically update UI first
-      const updatedBlocks = blocks.map(block => 
-        block.id === blockId ? { ...block, ...updates } : block
-      )
-      setBlocks(updatedBlocks)
+      await updateBlock(blockId, updates)
       setPreviewKey(prev => prev + 1)
-      
-      // Update selected block if it's the one being updated
-      if (selectedBlock?.id === blockId) {
-        setSelectedBlock({ ...selectedBlock, ...updates })
-      }
-      
-      const response = await fetch(`${API_URL}/bio/blocks/${blockId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(updates)
-      })
-      
-      const data = await response.json()
-      
-      if (response.ok) {
-        setBlocks(data.bio.blocks || [])
-        setBio(data.bio)
-        // Update selected block with server response
-        if (selectedBlock?.id === blockId) {
-          const updatedBlock = data.bio.blocks.find(b => b.id === blockId)
-          if (updatedBlock) {
-            setSelectedBlock(updatedBlock)
-          }
-        }
-        // toast.success('Block updated successfully') // Disabled to reduce toast spam
-      } else {
-        // Revert optimistic update on error
-        setBlocks(blocks)
-        if (selectedBlock?.id === blockId) {
-          setSelectedBlock(selectedBlock)
-        }
-        toast.error(data.message || 'Failed to update block')
-      }
     } catch (error) {
-      // Revert optimistic update on error
-      setBlocks(blocks)
-      if (selectedBlock?.id === blockId) {
-        setSelectedBlock(selectedBlock)
-      }
+      // Error handling is done in the hook
       console.error('Error updating block:', error)
-      toast.error('Failed to update block')
     }
   }
 
-  const deleteBlock = async (blockId) => {
+  const handleDeleteBlock = async (blockId) => {
     try {
-      const response = await fetch(`${API_URL}/bio/blocks/${blockId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-      
-      const data = await response.json()
-      
-      if (response.ok) {
-        setBlocks(data.bio.blocks || [])
-        setBio(data.bio)
-        if (selectedBlock?.id === blockId) {
-          setSelectedBlock(null)
-        }
-        setPreviewKey(prev => prev + 1)
-        // toast.success('Block deleted') // Disabled to reduce toast spam
-      } else {
-        toast.error(data.message || 'Failed to delete block')
-      }
+      await deleteBlock(blockId)
+      setPreviewKey(prev => prev + 1)
     } catch (error) {
+      // Error handling is done in the hook
       console.error('Error deleting block:', error)
-      toast.error('Failed to delete block')
     }
   }
 
-  const toggleBlock = async (blockId) => {
+  const handleToggleBlock = async (blockId) => {
     const block = blocks.find(b => b.id === blockId)
     if (!block) return
     
-    await updateBlock(blockId, { isActive: !block.isActive })
+    await toggleBlockVisibility(blockId, !block.isActive)
+    setPreviewKey(prev => prev + 1)
   }
 
-  const saveBio = async () => {
+  const handleSaveBio = async () => {
     try {
-      setSaving(true)
-      
-      // The bio is automatically saved when blocks are updated
-      // This button can be used for manual save or publishing
-      const response = await fetch(`${API_URL}/bio`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-      
-      if (response.ok) {
-        toast.success('Bio saved successfully!')
-      } else {
-        toast.error('Failed to save bio')
-      }
+      // Use the hook's save changes function
+      await saveChanges()
+      toast.success('Bio saved successfully!')
     } catch (error) {
       console.error('Error saving bio:', error)
       toast.error('Failed to save bio')
-    } finally {
-      setSaving(false)
     }
   }
 
-  const convertBlocksToBio = (blocks) => {
-    const bioData = {
-      profile: {},
-      links: [],
-      socialLinks: {},
-      customization: bio?.customization || {},
-      settings: bio?.settings || {}
-    }
-
-    blocks.forEach(block => {
-      if (block.type === 'header' && block.isActive) {
-        bioData.profile = block.content
-      } else if (block.type === 'links' && block.isActive) {
-        bioData.links = block.content.links || []
-      } else if (block.type === 'social' && block.isActive) {
-        bioData.socialLinks = block.content.links || {}
-      }
-    })
-
-    return bioData
-  }
 
   const getTheme = () => {
     return bio?.customization || {
@@ -452,15 +231,9 @@ export default function VisualBioBuilder() {
     }
   }
 
+  // Progressive loading: Show skeleton for initial load, partial skeleton for data loading
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading bio builder...</p>
-        </div>
-      </div>
-    )
+    return <BioBuilderSkeleton />
   }
 
   return (
@@ -505,7 +278,7 @@ export default function VisualBioBuilder() {
             </Button>
           </div>
           <Button 
-            onClick={saveBio} 
+            onClick={handleSaveBio} 
             disabled={saving}
             className="share-button"
           >
@@ -526,48 +299,75 @@ export default function VisualBioBuilder() {
             strategy={verticalListSortingStrategy}
           >
             {/* Left Panel - Blocks */}
-            <BlocksPanel
-              blocks={blocks}
-              selectedBlock={selectedBlock}
-              onSelectBlock={setSelectedBlock}
-              onAddBlock={addBlock}
-              onDeleteBlock={deleteBlock}
-              onToggleBlock={toggleBlock}
-            />
+            {blocksLoading ? (
+              <div className="w-80 bg-white border-r flex flex-col">
+                <div className="p-4 border-b">
+                  <div className="h-6 bg-gray-200 rounded animate-pulse w-24 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded animate-pulse w-40"></div>
+                </div>
+                <div className="flex-1 p-4">
+                  <BlocksSkeleton count={3} />
+                </div>
+              </div>
+            ) : (
+              <BlocksPanel
+                blocks={blocks}
+                selectedBlock={selectedBlock}
+                onSelectBlock={setSelectedBlock}
+                onAddBlock={handleAddBlock}
+                onDeleteBlock={handleDeleteBlock}
+                onToggleBlock={handleToggleBlock}
+              />
+            )}
           </SortableContext>
 
           {/* Center - Mobile Preview */}
-          <MobilePreview
-            blocks={blocks.filter(b => b.isActive)}
-            theme={getTheme()}
-            username={user?.username}
-            key={previewKey}
-          />
+          {bioLoading ? (
+            <div className="flex-1 flex items-center justify-center p-8">
+              <PreviewSkeleton />
+            </div>
+          ) : (
+            <MobilePreview
+              blocks={blocks.filter(b => b.isActive)}
+              theme={getTheme()}
+              username={user?.username}
+              key={previewKey}
+            />
+          )}
 
           {/* Right Panel - Properties */}
-          <PropertiesPanel
-            selectedBlock={selectedBlock}
-            onUpdateBlock={updateBlock}
-            theme={getTheme()}
-            onUpdateTheme={(updates) => {
-              if (!bio) return
-              
-              // Update local state immediately for instant preview
-              const updatedCustomization = { 
-                ...bio.customization, 
-                ...updates 
-              }
-              
-              setBio({
-                ...bio,
-                customization: updatedCustomization
-              })
-              setPreviewKey(prev => prev + 1)
-              
-              // Debounced save to backend
-              debouncedSaveCustomization(updatedCustomization)
-            }}
-          />
+          {bioLoading ? (
+            <div className="w-80 bg-white border-l flex flex-col">
+              <div className="p-4 border-b">
+                <div className="h-6 bg-gray-200 rounded animate-pulse w-28 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-36"></div>
+              </div>
+              <div className="flex-1 p-4">
+                <PropertiesSkeleton />
+              </div>
+            </div>
+          ) : (
+            <PropertiesPanel
+              selectedBlock={selectedBlock}
+              onUpdateBlock={handleUpdateBlock}
+              theme={getTheme()}
+              onUpdateTheme={(updates) => {
+                if (!bio) return
+                
+                // Update local state immediately for instant preview
+                const updatedCustomization = { 
+                  ...bio.customization, 
+                  ...updates 
+                }
+                
+                // Local state update is handled by the hook
+                setPreviewKey(prev => prev + 1)
+                
+                // Debounced save to backend
+                debouncedSaveCustomization(updatedCustomization)
+              }}
+            />
+          )}
         </DndContext>
       </div>
     </div>
