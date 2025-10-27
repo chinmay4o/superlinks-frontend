@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Badge } from '../../components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
 import { Separator } from '../../components/ui/separator'
+import { PurchaseCardSkeleton, MyPurchasesHeaderSkeleton } from '../../components/ui/purchase-card-skeleton'
+import salesService from '../../services/salesService'
 import { 
   Search, 
   Download, 
@@ -23,6 +25,7 @@ import {
 import { toast } from 'react-hot-toast'
 import { Link } from 'react-router-dom'
 import { dashboardColors } from '../../lib/dashboardColors'
+import { useDebounce } from '../../hooks/useDebounce'
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5005/api'
 
@@ -37,10 +40,15 @@ const STATUS_OPTIONS = [
 export function MyPurchasesPage() {
   const [purchases, setPurchases] = useState([])
   const [loading, setLoading] = useState(true)
+  const [purchasesLoading, setPurchasesLoading] = useState(false)
+  const [error, setError] = useState(null)
   
   // Filters
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  
+  // Debounced search
+  const debouncedSearchTerm = useDebounce(searchTerm, 500)
   
   // Pagination
   const [pagination, setPagination] = useState({
@@ -50,30 +58,22 @@ export function MyPurchasesPage() {
     limit: 20
   })
 
-  const fetchPurchases = async () => {
+  const fetchPurchases = useCallback(async (showLoading = true) => {
     try {
-      setLoading(true)
-      const token = localStorage.getItem('token')
+      if (showLoading) {
+        setPurchasesLoading(true)
+      }
+      setError(null)
       
-      const queryParams = new URLSearchParams({
+      const params = {
         page: pagination.currentPage,
         limit: pagination.limit,
         status: statusFilter,
-        search: searchTerm
-      })
-
-      const response = await fetch(`${API_BASE_URL}/purchases/my-purchases?${queryParams}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch purchases')
+        search: debouncedSearchTerm
       }
 
-      const data = await response.json()
+      const data = await salesService.getMyPurchases(params)
+      
       setPurchases(data.purchases || [])
       setPagination({
         currentPage: data.currentPage,
@@ -83,15 +83,26 @@ export function MyPurchasesPage() {
       })
     } catch (error) {
       console.error('Error fetching purchases:', error)
+      setError(error.message || 'Failed to load your purchases')
       toast.error('Failed to load your purchases')
+      setPurchases([])
     } finally {
+      setPurchasesLoading(false)
       setLoading(false)
     }
-  }
+  }, [pagination.currentPage, pagination.limit, statusFilter, debouncedSearchTerm])
 
+  // Initial load
   useEffect(() => {
     fetchPurchases()
-  }, [pagination.currentPage, statusFilter, searchTerm])
+  }, [fetchPurchases])
+
+  // Refresh data when filters change (without full page loading)
+  useEffect(() => {
+    if (!loading) {
+      fetchPurchases(false)
+    }
+  }, [statusFilter, debouncedSearchTerm])
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -162,13 +173,12 @@ export function MyPurchasesPage() {
     }
   }
 
+  // Progressive loading: Show skeleton for initial load, partial loading for data refresh
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">My Purchases</h1>
-        </div>
-        <div className="text-center py-8">Loading your purchases...</div>
+        <MyPurchasesHeaderSkeleton />
+        <PurchaseCardSkeleton count={5} />
       </div>
     )
   }
@@ -219,7 +229,9 @@ export function MyPurchasesPage() {
       </Card>
 
       {/* Purchases List */}
-      {purchases.length === 0 ? (
+      {purchasesLoading ? (
+        <PurchaseCardSkeleton count={3} />
+      ) : purchases.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
             <ShoppingBag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

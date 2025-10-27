@@ -87,6 +87,23 @@ const salesService = {
     return response.data
   },
 
+  // Get user's own purchases (as buyer) with caching
+  getMyPurchases: async (params = {}) => {
+    const cacheKey = cacheService.generateKey('/purchases/my-purchases', params)
+    const cached = cacheService.get(cacheKey)
+    
+    if (cached) {
+      return cached
+    }
+    
+    const response = await api.get('/purchases/my-purchases', { params })
+    
+    // Cache for 5 minutes (user's purchases don't change often)
+    cacheService.set(cacheKey, response.data, 5 * 60 * 1000)
+    
+    return response.data
+  },
+
   // Update purchase status
   updatePurchaseStatus: async (purchaseId, status) => {
     const response = await api.patch(`/purchases/${purchaseId}/status`, { status })
