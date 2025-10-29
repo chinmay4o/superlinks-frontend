@@ -5,7 +5,7 @@ import './MobilePreview.css'
 import PreviewContent from './PreviewContent'
 
 export default function MobilePreview({ blocks, theme, username }) {
-  const previewUrl = `superlinks.ai/bio/${username || 'username'}`
+  const previewUrl = `superlinks.ai/${username || 'username'}`
   
   // Ensure theme has default values to prevent null errors
   const safeTheme = {

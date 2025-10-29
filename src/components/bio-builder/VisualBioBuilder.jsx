@@ -249,12 +249,12 @@ export default function VisualBioBuilder() {
         </div>
         <div className="header-right">
           <div className="domain-selector">
-            <span className="domain-text">superlinks.ai/bio/{user?.username}</span>
+            <span className="domain-text">superlinks.ai/{user?.username}</span>
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={() => {
-                const url = `https://superlinks.ai/bio/${user?.username}`
+                const url = `https://superlinks.ai/${user?.username}`
                 navigator.clipboard.writeText(url)
                 toast.success('URL copied to clipboard!')
               }}
