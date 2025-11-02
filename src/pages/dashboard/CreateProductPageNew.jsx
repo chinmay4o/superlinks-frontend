@@ -14,7 +14,7 @@ import { Switch } from '../../components/ui/switch'
 import { 
   Upload, X, Plus, DollarSign, Tag, Image, FileText, Settings, 
   ArrowLeft, ArrowRight, Edit3, Eye, Smartphone, Monitor,
-  Images, MessageCircle, HelpCircle, User, Package,
+  MessageCircle, HelpCircle, User, Package,
   Link as LinkIcon, Palette, CreditCard, Shield, BarChart3
 } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
@@ -376,7 +376,7 @@ function PageDetailsTab({ productData, updateProductData }) {
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
             <OptionalSectionCard
-              icon={Images}
+              icon={Image}
               title="Gallery"
               enabled={productData.optionalSections.gallery}
               onToggle={(enabled) => updateProductData('optionalSections.gallery', enabled)}
