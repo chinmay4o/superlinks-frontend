@@ -17,6 +17,7 @@ import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
 import { DashboardHomePage } from './pages/dashboard/DashboardHomePage'
 import { ProductsPage } from './pages/dashboard/ProductsPage'
 import { CreateProductPage } from './pages/dashboard/CreateProductPage'
+import CreateProductPageNew from './pages/dashboard/CreateProductPageNew'
 import { PurchasesPage } from './pages/dashboard/PurchasesPage'
 import { MyPurchasesPage } from './pages/dashboard/MyPurchasesPage'
 import { AnalyticsPage } from './pages/dashboard/AnalyticsPage'
@@ -77,8 +78,8 @@ function App() {
               }>
                 <Route index element={<DashboardHomePage />} />
                 <Route path="products" element={<ProductsPage />} />
-                <Route path="products/new" element={<CreateProductPage />} />
-                <Route path="products/:id/edit" element={<CreateProductPage />} />
+                <Route path="products/new" element={<CreateProductPageNew />} />
+                <Route path="products/:id/edit" element={<CreateProductPageNew />} />
                 <Route path="purchases" element={<PurchasesPage />} />
                 <Route path="my-purchases" element={<MyPurchasesPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
