@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
@@ -6,6 +6,8 @@ import { Badge } from '../../components/ui/badge'
 import { Star, Download, Eye, ShoppingCart, Share2, Check, X, Heart, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import reviewService from '../../services/reviewService'
+import productService from '../../services/productService'
+import { ProductLandingSkeleton, ReviewsSkeleton } from '../../components/ui/product-skeleton'
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5005/api'
 
@@ -14,6 +16,7 @@ export function ProductLandingPage() {
   const navigate = useNavigate()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [productLoading, setProductLoading] = useState(false)
   const [error, setError] = useState(null)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [reviews, setReviews] = useState([])
@@ -51,44 +54,40 @@ export function ProductLandingPage() {
     }
   }
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        
-        let url
-        if (isUserProduct) {
-          url = `${API_BASE_URL}/products/public/${username}/${productSlug}`
-        } else {
-          url = `${API_BASE_URL}/products/slug/${actualSlug}`
-        }
-        
-        const response = await fetch(url)
-        const data = await response.json()
-        
-        if (!response.ok) {
-          throw new Error(data.message || 'Product not found')
-        }
-        
-        setProduct(data.product)
-        
-        // Fetch reviews after product is loaded
-        if (data.product?._id) {
-          fetchReviews(data.product._id)
-        }
-      } catch (err) {
-        setError(err.message)
-        console.error('Error fetching product:', err)
-      } finally {
-        setLoading(false)
+  const fetchProduct = useCallback(async (showLoading = true) => {
+    try {
+      if (showLoading) {
+        setProductLoading(true)
       }
+      setError(null)
+      
+      let data
+      if (isUserProduct) {
+        data = await productService.getPublicProduct(username, productSlug)
+      } else {
+        data = await productService.getProductBySlug(actualSlug)
+      }
+      
+      setProduct(data.product)
+      
+      // Fetch reviews after product is loaded (progressive loading)
+      if (data.product?._id) {
+        fetchReviews(data.product._id)
+      }
+    } catch (err) {
+      setError(err.message || 'Product not found')
+      console.error('Error fetching product:', err)
+    } finally {
+      setProductLoading(false)
+      setLoading(false)
     }
-    
+  }, [actualSlug, username, productSlug, isUserProduct])
+
+  useEffect(() => {
     if (actualSlug) {
       fetchProduct()
     }
-  }, [actualSlug, username, productSlug, isUserProduct])
+  }, [fetchProduct, actualSlug])
 
   // Refetch reviews when showAllReviews changes
   useEffect(() => {
@@ -125,14 +124,7 @@ export function ProductLandingPage() {
   }
   
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading product...</p>
-        </div>
-      </div>
-    )
+    return <ProductLandingSkeleton />
   }
   
   if (error) {
@@ -466,7 +458,9 @@ export function ProductLandingPage() {
                     
                     {/* Individual Reviews */}
                     <div className="space-y-4 pt-4 border-t">
-                      {reviews.length > 0 ? (
+                      {reviewsLoading ? (
+                        <ReviewsSkeleton count={showAllReviews ? 10 : 3} />
+                      ) : reviews.length > 0 ? (
                         <>
                           {reviews.map((review) => (
                             <div key={review._id} className="space-y-2">

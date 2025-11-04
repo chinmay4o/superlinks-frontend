@@ -33,6 +33,7 @@ import { InstagramCallback } from './pages/dashboard/InstagramCallback'
 
 // Public pages
 import { ProductLandingPage } from './pages/public/ProductLandingPage'
+import { ProductLandingPageV2 } from './pages/public/ProductLandingPageV2'
 import { CheckoutPage } from './pages/public/CheckoutPage'
 import { ThankYouPage } from './pages/public/ThankYouPage'
 import { UserProfilePage } from './pages/public/UserProfilePage'
@@ -70,6 +71,18 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
               
+              {/* Product Creation Routes - Full Screen */}
+              <Route path="/dashboard/products/new" element={
+                <PrivateRoute>
+                  <CreateProductPageNew />
+                </PrivateRoute>
+              } />
+              <Route path="/dashboard/products/:id/edit" element={
+                <PrivateRoute>
+                  <CreateProductPageNew />
+                </PrivateRoute>
+              } />
+
               {/* Dashboard Routes - Protected */}
               <Route path="/dashboard" element={
                 <PrivateRoute>
@@ -78,8 +91,6 @@ function App() {
               }>
                 <Route index element={<DashboardHomePage />} />
                 <Route path="products" element={<ProductsPage />} />
-                <Route path="products/new" element={<CreateProductPageNew />} />
-                <Route path="products/:id/edit" element={<CreateProductPageNew />} />
                 <Route path="purchases" element={<PurchasesPage />} />
                 <Route path="my-purchases" element={<MyPurchasesPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
@@ -96,13 +107,13 @@ function App() {
               </Route>
               
               {/* Public Routes */}
-              <Route path="/p/:slug" element={<ProductLandingPage />} />
+              <Route path="/p/:slug" element={<ProductLandingPageV2 />} />
               <Route path="/checkout/:productId" element={<CheckoutPage />} />
               <Route path="/thank-you/:purchaseId" element={<ThankYouPage />} />
               <Route path="/content/:purchaseId" element={<ContentViewer />} />
               <Route path="/bio/:username" element={<PublicBioPage />} />
               <Route path="/:username" element={<UserProfilePage />} />
-              <Route path="/:username/:productSlug" element={<ProductLandingPage />} />
+              <Route path="/:username/:productSlug" element={<ProductLandingPageV2 />} />
               
               {/* Default redirect */}
               <Route path="/" element={

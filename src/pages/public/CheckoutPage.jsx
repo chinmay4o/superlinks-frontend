@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
@@ -10,6 +10,8 @@ import { Separator } from '../../components/ui/separator'
 import { ShoppingCart, CreditCard, Shield, ArrowLeft, Percent } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { SimpleThemeToggle } from '../../components/ui/theme-toggle'
+import productService from '../../services/productService'
+import { CheckoutSkeleton } from '../../components/ui/checkout-skeleton'
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5005/api'
 
@@ -50,25 +52,22 @@ export function CheckoutPage() {
   useEffect(() => {
     fetchProduct()
     loadRazorpayScript()
-  }, [productId])
+  }, [fetchProduct])
   
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await fetch(`${API_BASE_URL}/products/${productId}`)
-      const data = await response.json()
+      setError(null)
       
-      if (!response.ok) {
-        throw new Error(data.message || 'Product not found')
-      }
-      
+      const data = await productService.getProduct(productId)
       setProduct(data.product)
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Product not found')
+      console.error('Error fetching product:', err)
     } finally {
       setLoading(false)
     }
-  }
+  }, [productId])
   
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -296,14 +295,7 @@ export function CheckoutPage() {
   }
   
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading checkout...</p>
-        </div>
-      </div>
-    )
+    return <CheckoutSkeleton />
   }
   
   if (error) {

@@ -63,6 +63,23 @@ const productService = {
     return response.data;
   },
 
+  // Get single public product by username and slug
+  getPublicProduct: async (username, slug) => {
+    const cacheKey = cacheService.generateKey(`/products/public/${username}/${slug}`);
+    const cached = cacheService.get(cacheKey);
+    
+    if (cached) {
+      return cached;
+    }
+    
+    const response = await api.get(`/products/public/${username}/${slug}`);
+    
+    // Cache for 5 minutes for public products
+    cacheService.set(cacheKey, response.data, 5 * 60 * 1000);
+    
+    return response.data;
+  },
+
   // Get public products by username with caching
   getPublicProducts: async (username, params = {}) => {
     const cacheKey = cacheService.generateKey(`/products/public/${username}`, params);

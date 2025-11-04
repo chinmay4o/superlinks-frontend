@@ -188,9 +188,9 @@ export function CreateProductPageNew() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Full Screen Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container flex h-16 items-center justify-between">
+        <div className="px-6 flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -217,11 +217,11 @@ export function CreateProductPageNew() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="container py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {/* Left Panel - Form Content */}
-          <div className="lg:col-span-2">
+      {/* Full Screen Main Content - 50/50 Split */}
+      <div className="h-[calc(100vh-64px)] flex">
+        {/* Left Panel - Form Content (50%) */}
+        <div className="w-1/2 overflow-y-auto bg-background">
+          <div className="p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="page-details" className="flex items-center gap-2">
@@ -262,39 +262,40 @@ export function CreateProductPageNew() {
               </div>
             </Tabs>
           </div>
+        </div>
 
-          {/* Right Panel - Live Preview */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24">
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">Preview</CardTitle>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant={previewMode === 'desktop' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setPreviewMode('desktop')}
-                      >
-                        <Monitor className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant={previewMode === 'mobile' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setPreviewMode('mobile')}
-                      >
-                        <Smartphone className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <LivePreview 
-                    productData={productData} 
-                    previewMode={previewMode}
-                  />
-                </CardContent>
-              </Card>
+        {/* Right Panel - Live Preview (50%) */}
+        <div className="w-1/2 border-l bg-gray-50">
+          <div className="h-full flex flex-col">
+            {/* Preview Header */}
+            <div className="p-6 border-b bg-background">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Preview</h2>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={previewMode === 'desktop' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPreviewMode('desktop')}
+                  >
+                    <Monitor className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={previewMode === 'mobile' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPreviewMode('mobile')}
+                  >
+                    <Smartphone className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Preview Content */}
+            <div className="flex-1 p-6 overflow-y-auto">
+              <LivePreview 
+                productData={productData} 
+                previewMode={previewMode}
+              />
             </div>
           </div>
         </div>
