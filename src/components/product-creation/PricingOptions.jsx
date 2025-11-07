@@ -151,6 +151,47 @@ export function PricingOptions({ productData, updateProductData }) {
         </div>
       )}
 
+      {/* Customer Decides Price Settings */}
+      {productData.pricingType === 'customer-decides' && (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="minPrice">Minimum Price (Optional)</Label>
+            <div className="flex gap-2">
+              <div className="flex items-center bg-muted rounded-md px-3">
+                <span className="text-sm font-medium">{selectedCurrency.symbol}</span>
+              </div>
+              <Input
+                id="minPrice"
+                type="number"
+                value={productData.price?.minAmount || ''}
+                onChange={(e) => updateProductData('price.minAmount', Number(e.target.value))}
+                placeholder="0"
+                className="flex-1"
+                min="0"
+              />
+              <Select 
+                value={productData.price.currency} 
+                onValueChange={(value) => updateProductData('price.currency', value)}
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map((currency) => (
+                    <SelectItem key={currency.value} value={currency.value}>
+                      {currency.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Set a minimum amount customers must pay. Leave empty for no minimum.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Advanced Settings */}
       <div>
         <Button 

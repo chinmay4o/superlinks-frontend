@@ -34,6 +34,7 @@ import { InstagramCallback } from './pages/dashboard/InstagramCallback'
 // Public pages
 import { ProductLandingPage } from './pages/public/ProductLandingPage'
 import { ProductLandingPageV2 } from './pages/public/ProductLandingPageV2'
+import { ProductPreviewPage } from './pages/public/ProductPreviewPage'
 import { CheckoutPage } from './pages/public/CheckoutPage'
 import { ThankYouPage } from './pages/public/ThankYouPage'
 import { UserProfilePage } from './pages/public/UserProfilePage'
@@ -107,6 +108,7 @@ function App() {
               </Route>
               
               {/* Public Routes */}
+              <Route path="/preview/:username/:slug" element={<ProductPreviewPage />} />
               <Route path="/p/:slug" element={<ProductLandingPageV2 />} />
               <Route path="/checkout/:productId" element={<CheckoutPage />} />
               <Route path="/thank-you/:purchaseId" element={<ThankYouPage />} />

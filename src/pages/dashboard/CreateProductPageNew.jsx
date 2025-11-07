@@ -12,9 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/ta
 import { Separator } from '../../components/ui/separator'
 import { Switch } from '../../components/ui/switch'
 import { 
-  Upload, X, Plus, DollarSign, Tag, Image, FileText, Settings, 
+  Upload, X, Plus, DollarSign, Tag, Settings, 
   ArrowLeft, ArrowRight, Edit3, Eye, Smartphone, Monitor,
-  MessageCircle, HelpCircle, User, Package,
+  MessageCircle, HelpCircle, User,
   Link as LinkIcon, Palette, CreditCard, Shield, BarChart3
 } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
@@ -34,6 +34,9 @@ import BoostSalesSettings from '../../components/product-creation/BoostSalesSett
 import PoliciesSettings from '../../components/product-creation/PoliciesSettings'
 import AdvancedFeatures from '../../components/product-creation/AdvancedFeatures'
 import LivePreview from '../../components/product-creation/LivePreview'
+import TestimonialsEditor from '../../components/product-creation/TestimonialsEditor'
+import FAQEditor from '../../components/product-creation/FAQEditor'
+import AboutMeEditor from '../../components/product-creation/AboutMeEditor'
 
 const PRODUCT_CATEGORIES = [
   { value: 'ebook', label: 'Ebook' },
@@ -71,18 +74,28 @@ export function CreateProductPageNew() {
     
     // Optional sections
     optionalSections: {
-      gallery: false,
       testimonials: false,
       faq: false,
-      aboutMe: false,
-      showcaseProducts: false
+      aboutMe: false
+    },
+    
+    // Optional sections data
+    testimonialsData: [],
+    faqData: [],
+    aboutMeData: {
+      title: '',
+      content: '',
+      name: '',
+      role: '',
+      company: '',
+      profileImage: ''
     },
     
     // Payment Page Details
     files: [],
     resourceLinks: [],
     pricingType: 'fixed', // 'fixed' | 'customer-decides'
-    price: { amount: 100, currency: 'INR' },
+    price: { amount: 100, currency: 'INR', minAmount: null },
     offerDiscount: false,
     discountPrice: null,
     limitQuantity: false,
@@ -92,15 +105,30 @@ export function CreateProductPageNew() {
     theme: 'default',
     checkoutExperience: 'next-page',
     customerInfo: {
+      collectName: true,
+      nameRequired: true,
       emailVerification: true,
-      phoneNumber: false,
+      collectPhoneNumber: false,
       phoneVerification: false,
       additionalQuestions: []
     },
     boostSales: {
       bumpOffer: false,
+      bumpOfferData: {
+        title: '',
+        description: '',
+        price: { amount: 50, currency: 'INR' },
+        originalPrice: { amount: 100, currency: 'INR' },
+        files: []
+      },
       automatedEmail: false,
-      discountCoupons: false
+      automatedEmailData: {
+        subject: '',
+        content: '',
+        triggerEvent: 'purchase'
+      },
+      discountCoupons: false,
+      discountCouponsData: []
     },
     policies: {
       termsConditions: '',
@@ -142,11 +170,65 @@ export function CreateProductPageNew() {
     try {
       setLoading(true)
       const response = await productService.getProduct(id)
-      // Map response data to our new structure
-      setProductData(prev => ({
-        ...prev,
-        ...response.product
-      }))
+      const backendData = response.product
+      
+      // Transform backend data structure to match frontend expectations
+      const frontendData = {
+        ...backendData,
+        // Transform optional sections back to frontend format
+        testimonialsData: backendData.optionalSections?.testimonialsData || [],
+        faqData: backendData.optionalSections?.faqData || [],
+        aboutMeData: backendData.optionalSections?.aboutMeData || {
+          title: '',
+          content: '',
+          name: '',
+          role: '',
+          company: '',
+          profileImage: ''
+        },
+        // Transform boost sales back to frontend format
+        boostSales: {
+          bumpOffer: backendData.bumpOffer?.enabled || false,
+          bumpOfferData: {
+            title: backendData.bumpOffer?.title || '',
+            description: backendData.bumpOffer?.description || '',
+            price: { 
+              amount: backendData.bumpOffer?.price || 50, 
+              currency: backendData.price?.currency || 'INR' 
+            },
+            originalPrice: { 
+              amount: backendData.bumpOffer?.originalPrice || 100, 
+              currency: backendData.price?.currency || 'INR' 
+            },
+            files: backendData.bumpOffer?.files || []
+          },
+          automatedEmail: backendData.emailAutomation?.enabled || false,
+          automatedEmailData: {
+            subject: backendData.emailAutomation?.subject || '',
+            content: backendData.emailAutomation?.content || '',
+            triggerEvent: backendData.emailAutomation?.triggerEvent || 'purchase'
+          },
+          discountCoupons: (backendData.enhancedCoupons?.length > 0) || false,
+          discountCouponsData: backendData.enhancedCoupons || []
+        },
+        // Transform pricing back to frontend format
+        pricingType: backendData.pricing?.type === 'pay-what-you-want' ? 'customer-decides' : 'fixed',
+        price: {
+          ...backendData.price,
+          minAmount: backendData.pricing?.minAmount || null
+        },
+        // Transform advanced fields back to frontend format
+        customUrl: backendData.advanced?.customUrl || '',
+        postPurchaseBehavior: backendData.advanced?.postPurchaseBehavior || 'download',
+        customRedirectUrl: backendData.advanced?.customRedirectUrl || '',
+        // Ensure tracking exists
+        tracking: backendData.tracking || {
+          metaPixel: '',
+          googleAnalytics: ''
+        }
+      }
+      
+      setProductData(frontendData)
     } catch (error) {
       toast.error('Failed to load product data')
       console.error('Error loading product:', error)
@@ -159,11 +241,54 @@ export function CreateProductPageNew() {
     try {
       setSaving(true)
       
+      // Transform frontend data structure to match backend expectations
+      const transformedData = {
+        ...productData,
+        // Transform optional sections
+        optionalSections: {
+          testimonialsData: productData.testimonialsData || [],
+          faqData: productData.faqData || [],
+          aboutMeData: productData.aboutMeData || {}
+        },
+        // Transform boost sales to backend format
+        bumpOffer: {
+          enabled: productData.boostSales?.bumpOffer || false,
+          ...productData.boostSales?.bumpOfferData
+        },
+        emailAutomation: {
+          enabled: productData.boostSales?.automatedEmail || false,
+          ...productData.boostSales?.automatedEmailData
+        },
+        enhancedCoupons: productData.boostSales?.discountCouponsData || [],
+        // Transform pricing type from frontend to backend format
+        pricing: {
+          type: productData.pricingType === 'customer-decides' ? 'pay-what-you-want' : 'one-time',
+          minAmount: productData.price?.minAmount || 0
+        },
+        // Transform tracking and advanced sections
+        tracking: productData.tracking || {},
+        advanced: {
+          customUrl: productData.customUrl || '',
+          postPurchaseBehavior: productData.postPurchaseBehavior || 'download',
+          customRedirectUrl: productData.customRedirectUrl || ''
+        }
+      }
+      
+      // Remove frontend-specific fields that don't exist in backend
+      delete transformedData.testimonialsData
+      delete transformedData.faqData  
+      delete transformedData.aboutMeData
+      delete transformedData.boostSales
+      delete transformedData.pricingType
+      delete transformedData.customUrl
+      delete transformedData.postPurchaseBehavior
+      delete transformedData.customRedirectUrl
+      
       if (isEditing) {
-        await productService.updateProduct(id, productData)
+        await productService.updateProduct(id, transformedData)
         toast.success('Product updated successfully!')
       } else {
-        const response = await productService.createProduct(productData)
+        const response = await productService.createProduct(transformedData)
         toast.success('Product created successfully!')
         navigate(`/dashboard/products/${response.product._id}/edit`)
       }
@@ -187,7 +312,7 @@ export function CreateProductPageNew() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background product-creation-page">
       {/* Full Screen Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="px-6 flex h-16 items-center justify-between">
@@ -217,10 +342,10 @@ export function CreateProductPageNew() {
         </div>
       </header>
 
-      {/* Full Screen Main Content - 50/50 Split */}
+      {/* Full Screen Main Content - 40/60 Split */}
       <div className="h-[calc(100vh-64px)] flex">
-        {/* Left Panel - Form Content (50%) */}
-        <div className="w-1/2 overflow-y-auto bg-background">
+        {/* Left Panel - Form Content (40%) */}
+        <div className="w-2/5 overflow-y-auto bg-background">
           <div className="p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
@@ -264,8 +389,8 @@ export function CreateProductPageNew() {
           </div>
         </div>
 
-        {/* Right Panel - Live Preview (50%) */}
-        <div className="w-1/2 border-l bg-gray-50">
+        {/* Right Panel - Live Preview (60%) */}
+        <div className="w-3/5 border-l bg-gray-50">
           <div className="h-full flex flex-col">
             {/* Preview Header */}
             <div className="p-6 border-b bg-background">
@@ -377,12 +502,6 @@ function PageDetailsTab({ productData, updateProductData }) {
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
             <OptionalSectionCard
-              icon={Image}
-              title="Gallery"
-              enabled={productData.optionalSections.gallery}
-              onToggle={(enabled) => updateProductData('optionalSections.gallery', enabled)}
-            />
-            <OptionalSectionCard
               icon={MessageCircle}
               title="Testimonials"
               enabled={productData.optionalSections.testimonials}
@@ -399,17 +518,56 @@ function PageDetailsTab({ productData, updateProductData }) {
               title="About Me"
               enabled={productData.optionalSections.aboutMe}
               onToggle={(enabled) => updateProductData('optionalSections.aboutMe', enabled)}
-            />
-            <OptionalSectionCard
-              icon={Package}
-              title="Showcase Products"
-              enabled={productData.optionalSections.showcaseProducts}
-              onToggle={(enabled) => updateProductData('optionalSections.showcaseProducts', enabled)}
               className="col-span-2"
             />
           </div>
         </CardContent>
       </Card>
+
+      {/* Testimonials Editor */}
+      {productData.optionalSections.testimonials && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Manage Testimonials</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TestimonialsEditor
+              testimonials={productData.testimonialsData}
+              onChange={(testimonials) => updateProductData('testimonialsData', testimonials)}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* FAQ Editor */}
+      {productData.optionalSections.faq && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Manage FAQ</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FAQEditor
+              faqs={productData.faqData}
+              onChange={(faqs) => updateProductData('faqData', faqs)}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* About Me Editor */}
+      {productData.optionalSections.aboutMe && (
+        <Card>
+          <CardHeader>
+            <CardTitle>About Me Section</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AboutMeEditor
+              aboutMeData={productData.aboutMeData}
+              onChange={(aboutMeData) => updateProductData('aboutMeData', aboutMeData)}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
