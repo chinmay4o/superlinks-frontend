@@ -131,7 +131,7 @@ export default function PreviewContent({ blocks, theme, username }) {
                 fontSize: '24px', 
                 fontWeight: '700',
                 marginBottom: '0.5rem',
-                color: theme.textColor 
+                color: safeTheme.textColor 
               }}>
                 {block.content.title}
               </h1>

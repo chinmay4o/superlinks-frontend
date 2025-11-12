@@ -28,6 +28,31 @@ export function ProductPreviewPage() {
     const coverImageUrl = searchParams.get('coverImage')
     const files = searchParams.get('files') ? JSON.parse(decodeURIComponent(searchParams.get('files'))) : []
     
+    // Parse testimonials, FAQs, and about me data
+    let testimonials = []
+    let faqs = []
+    let aboutMe = {}
+    
+    try {
+      testimonials = searchParams.get('testimonials') ? JSON.parse(decodeURIComponent(searchParams.get('testimonials'))) : []
+    } catch (e) {
+      console.warn('Error parsing testimonials:', e)
+    }
+    
+    try {
+      faqs = searchParams.get('faqs') ? JSON.parse(decodeURIComponent(searchParams.get('faqs'))) : []
+    } catch (e) {
+      console.warn('Error parsing FAQs:', e)
+    }
+    
+    try {
+      aboutMe = searchParams.get('aboutMe') ? JSON.parse(decodeURIComponent(searchParams.get('aboutMe'))) : {}
+    } catch (e) {
+      console.warn('Error parsing about me:', e)
+    }
+    
+    const themeStyle = searchParams.get('themeStyle') || 'default'
+    
     return {
       _id: 'preview-id',
       title,
@@ -56,6 +81,16 @@ export function ProductPreviewPage() {
         bio: 'Creator bio'
       },
       category: searchParams.get('category') || 'other',
+      // Add optional sections data for testimonials, FAQ, and about me
+      optionalSections: {
+        testimonialsData: testimonials,
+        faqData: faqs,
+        aboutMeData: aboutMe
+      },
+      // Add advanced settings for theme
+      advanced: {
+        themeStyle: themeStyle
+      },
       stats: {
         views: 0,
         sales: 0,

@@ -49,11 +49,6 @@ export function CheckoutPage() {
   const [customTip, setCustomTip] = useState('')
   const [discountApplied, setDiscountApplied] = useState(null)
   
-  useEffect(() => {
-    fetchProduct()
-    loadRazorpayScript()
-  }, [fetchProduct])
-  
   const fetchProduct = useCallback(async () => {
     try {
       setLoading(true)
@@ -68,6 +63,11 @@ export function CheckoutPage() {
       setLoading(false)
     }
   }, [productId])
+  
+  useEffect(() => {
+    fetchProduct()
+    loadRazorpayScript()
+  }, [productId, fetchProduct])
   
   const handleInputChange = (field, value) => {
     setFormData(prev => ({

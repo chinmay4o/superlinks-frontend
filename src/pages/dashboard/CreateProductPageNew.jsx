@@ -208,7 +208,7 @@ export function CreateProductPageNew() {
             content: backendData.emailAutomation?.content || '',
             triggerEvent: backendData.emailAutomation?.triggerEvent || 'purchase'
           },
-          discountCoupons: (backendData.enhancedCoupons?.length > 0) || false,
+          discountCoupons: (backendData.enhancedCoupons && backendData.enhancedCoupons.length > 0) || false,
           discountCouponsData: backendData.enhancedCoupons || []
         },
         // Transform pricing back to frontend format
@@ -237,13 +237,15 @@ export function CreateProductPageNew() {
     }
   }
 
-  const handleSave = async () => {
+  const handleSave = async (isDraft = false) => {
     try {
       setSaving(true)
       
       // Transform frontend data structure to match backend expectations
       const transformedData = {
         ...productData,
+        // Set draft status
+        isDraft: isDraft,
         // Transform optional sections
         optionalSections: {
           testimonialsData: productData.testimonialsData || [],
@@ -286,10 +288,18 @@ export function CreateProductPageNew() {
       
       if (isEditing) {
         await productService.updateProduct(id, transformedData)
-        toast.success('Product updated successfully!')
+        if (isDraft) {
+          toast.success('Product saved as draft!')
+        } else {
+          toast.success('Product updated and published!')
+        }
       } else {
         const response = await productService.createProduct(transformedData)
-        toast.success('Product created successfully!')
+        if (isDraft) {
+          toast.success('Product saved as draft!')
+        } else {
+          toast.success('Product created and published!')
+        }
         navigate(`/dashboard/products/${response.product._id}/edit`)
       }
     } catch (error) {
@@ -332,10 +342,10 @@ export function CreateProductPageNew() {
           </div>
           
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" disabled={saving}>
-              Save Draft
+            <Button variant="outline" size="sm" disabled={saving} onClick={() => handleSave(true)}>
+              {saving ? 'Saving...' : 'Save Draft'}
             </Button>
-            <Button onClick={handleSave} disabled={saving} size="sm">
+            <Button onClick={() => handleSave(false)} disabled={saving} size="sm">
               {saving ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
@@ -451,7 +461,7 @@ function PageDetailsTab({ productData, updateProductData }) {
                 maxLength={75}
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                {productData.title.length}/75
+                {(productData.title || '').length}/75
               </span>
             </div>
           </div>
@@ -487,7 +497,7 @@ function PageDetailsTab({ productData, updateProductData }) {
                 maxLength={25}
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                {productData.buttonText.length}/25
+                {(productData.buttonText || '').length}/25
               </span>
             </div>
           </div>

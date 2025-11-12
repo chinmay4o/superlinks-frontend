@@ -21,7 +21,12 @@ export function LivePreview({ productData, previewMode }) {
       currency: debouncedProductData.price?.currency || 'INR',
       // Skip coverImage URL param - handle via postMessage instead
       files: JSON.stringify(debouncedProductData.files || []),
-      creatorName: 'Your Profile'
+      creatorName: 'Your Profile',
+      // Add testimonials and FAQ data
+      testimonials: JSON.stringify(debouncedProductData.testimonialsData || []),
+      faqs: JSON.stringify(debouncedProductData.faqData || []),
+      aboutMe: JSON.stringify(debouncedProductData.aboutMeData || {}),
+      themeStyle: debouncedProductData.themeStyle || 'default'
     })
     
     return `/preview/your-profile/preview-product?${params.toString()}`

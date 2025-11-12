@@ -27,6 +27,7 @@ import { ProfileSettingsPage } from './pages/dashboard/ProfileSettingsPage'
 import { PaymentSettingsPage } from './pages/dashboard/PaymentSettingsPage'
 import { DomainSettingsPage } from './pages/dashboard/DomainSettingsPage'
 import { BioBuilderPage } from './pages/dashboard/BioBuilderPage'
+import BioBuilderPageNew from './pages/dashboard/BioBuilderPageNew'
 import { InstagramSettings } from './pages/dashboard/InstagramSettings'
 import { InstagramFunnels } from './pages/dashboard/InstagramFunnels'
 import { InstagramCallback } from './pages/dashboard/InstagramCallback'
@@ -78,6 +79,13 @@ function App() {
                   <CreateProductPageNew />
                 </PrivateRoute>
               } />
+              
+              {/* Bio Builder Routes - Full Screen */}
+              <Route path="/bio-builder" element={
+                <PrivateRoute>
+                  <BioBuilderPageNew />
+                </PrivateRoute>
+              } />
               <Route path="/dashboard/products/:id/edit" element={
                 <PrivateRoute>
                   <CreateProductPageNew />
@@ -96,7 +104,7 @@ function App() {
                 <Route path="my-purchases" element={<MyPurchasesPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="communications" element={<CommunicationsPage />} />
-                <Route path="bio" element={<BioBuilderPage />} />
+                <Route path="bio" element={<Navigate to="/bio-builder" replace />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="settings/profile" element={<ProfileSettingsPage />} />
                 <Route path="settings/payments" element={<PaymentSettingsPage />} />

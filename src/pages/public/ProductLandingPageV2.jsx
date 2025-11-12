@@ -8,6 +8,7 @@ import {
 } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
+import * as Collapsible from "@radix-ui/react-collapsible";
 import {
   Star,
   Download,
@@ -25,9 +26,18 @@ import {
   Code,
   ExternalLink,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   User,
   Calendar,
   Globe,
+  MessageCircle,
+  HelpCircle,
+  Twitter,
+  Linkedin,
+  Instagram,
+  Youtube,
+  Facebook,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import reviewService from "../../services/reviewService";
@@ -53,6 +63,7 @@ export function ProductLandingPageV2({
   const [reviewsSummary, setReviewsSummary] = useState(
     mockReviewsSummary || { totalReviews: 0, averageRating: 0 }
   );
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
   // Determine which slug and API endpoint to use
   const actualSlug = slug || productSlug;
@@ -175,6 +186,95 @@ export function ProductLandingPageV2({
     return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
   };
 
+  const getSocialIcon = (platform) => {
+    const iconProps = { className: "h-4 w-4" };
+    switch (platform.toLowerCase()) {
+      case 'twitter':
+        return <Twitter {...iconProps} />;
+      case 'linkedin':
+        return <Linkedin {...iconProps} />;
+      case 'instagram':
+        return <Instagram {...iconProps} />;
+      case 'youtube':
+        return <Youtube {...iconProps} />;
+      case 'facebook':
+        return <Facebook {...iconProps} />;
+      default:
+        return <ExternalLink {...iconProps} />;
+    }
+  };
+
+  const getThemeStyles = (themeStyle) => {
+    const themes = {
+      dawn: {
+        primary: 'bg-orange-500 hover:bg-orange-600 text-white',
+        background: 'bg-orange-50',
+        border: 'border-orange-200',
+        accent: 'text-orange-600'
+      },
+      dusk: {
+        primary: 'bg-purple-500 hover:bg-purple-600 text-white',
+        background: 'bg-purple-50',
+        border: 'border-purple-200',
+        accent: 'text-purple-600'
+      },
+      default: {
+        primary: 'bg-blue-600 hover:bg-blue-700 text-white',
+        background: 'bg-gray-50',
+        border: 'border-gray-200',
+        accent: 'text-blue-600'
+      }
+    };
+    return themes[themeStyle] || themes.default;
+  };
+
+  // Meta Pixel and Google Analytics tracking
+  useEffect(() => {
+    if (isPreview) return;
+    
+    // Meta Pixel tracking
+    if (product?.tracking?.metaPixel && typeof window !== 'undefined') {
+      if (!window.fbq) {
+        const script = document.createElement('script');
+        script.innerHTML = `
+          !function(f,b,e,v,n,t,s)
+          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+          n.queue=[];t=b.createElement(e);t.async=!0;
+          t.src=v;s=b.getElementsByTagName(e)[0];
+          s.parentNode.insertBefore(t,s)}(window, document,'script',
+          'https://connect.facebook.net/en_US/fbevents.js');
+        `;
+        document.head.appendChild(script);
+        
+        window.fbq('init', product.tracking.metaPixel);
+        window.fbq('track', 'PageView');
+      }
+    }
+    
+    // Google Analytics tracking
+    if (product?.tracking?.googleAnalytics && typeof window !== 'undefined') {
+      if (!window.gtag) {
+        const script1 = document.createElement('script');
+        script1.async = true;
+        script1.src = `https://www.googletagmanager.com/gtag/js?id=${product.tracking.googleAnalytics}`;
+        document.head.appendChild(script1);
+        
+        const script2 = document.createElement('script');
+        script2.innerHTML = `
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${product.tracking.googleAnalytics}');
+        `;
+        document.head.appendChild(script2);
+        
+        window.gtag = window.gtag || function(){window.dataLayer.push(arguments);};
+      }
+    }
+  }, [product?.tracking, isPreview]);
+
   const handleFileClick = (file, index) => {
     setSelectedFileIndex(index);
     setSelectedFile(file);
@@ -216,9 +316,15 @@ export function ProductLandingPageV2({
   const mainImage = product.images?.cover?.url || "/placeholder-product.jpg";
   const productFiles = product.files || [];
   const creator = product.creator || {};
+  const themeStyles = getThemeStyles(product?.advanced?.themeStyle);
+  
+  // Optional sections data
+  const testimonials = product?.optionalSections?.testimonialsData || [];
+  const faqs = product?.optionalSections?.faqData || [];
+  const aboutMe = product?.optionalSections?.aboutMeData || {};
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen ${themeStyles.background}`}>
       {/* Top Bar */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -323,6 +429,136 @@ export function ProductLandingPageV2({
                 </CardContent>
               </Card>
 
+              {/* Testimonials */}
+              {testimonials.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl flex items-center space-x-2">
+                      <MessageCircle className="h-5 w-5" />
+                      <span>What People Say</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {testimonials.map((testimonial, index) => (
+                        <div
+                          key={index}
+                          className={`p-6 rounded-lg border ${themeStyles.border} ${themeStyles.background}`}
+                        >
+                          <div className="flex items-center space-x-1 mb-3">
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${
+                                  i < testimonial.rating
+                                    ? "fill-yellow-400 text-yellow-400"
+                                    : "text-gray-300"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <blockquote className="text-gray-700 mb-4 italic">
+                            "{testimonial.feedback || testimonial.testimonial}"
+                          </blockquote>
+                          <div className="flex items-center space-x-3">
+                            {testimonial.avatar ? (
+                              <img
+                                src={testimonial.avatar}
+                                alt={testimonial.name}
+                                className="w-10 h-10 rounded-full"
+                              />
+                            ) : (
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${themeStyles.primary}`}>
+                                <span className="text-white font-medium">
+                                  {testimonial.name?.charAt(0)?.toUpperCase() || "T"}
+                                </span>
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-medium text-gray-900">{testimonial.name}</p>
+                              {(testimonial.role || testimonial.position) && (
+                                <p className="text-sm text-gray-600">
+                                  {testimonial.role || testimonial.position}
+                                  {testimonial.company && `, ${testimonial.company}`}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* FAQ Section */}
+              {faqs.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl flex items-center space-x-2">
+                      <HelpCircle className="h-5 w-5" />
+                      <span>Frequently Asked Questions</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {faqs.map((faq, index) => (
+                        <Collapsible.Root
+                          key={index}
+                          open={openFaqIndex === index}
+                          onOpenChange={(open) => setOpenFaqIndex(open ? index : null)}
+                        >
+                          <Collapsible.Trigger className={`w-full flex items-center justify-between p-4 text-left rounded-lg border ${themeStyles.border} hover:bg-gray-50 transition-colors`}>
+                            <span className="font-medium text-gray-900">{faq.question}</span>
+                            {openFaqIndex === index ? (
+                              <ChevronUp className="h-4 w-4 text-gray-500" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-gray-500" />
+                            )}
+                          </Collapsible.Trigger>
+                          <Collapsible.Content className="px-4 pb-4">
+                            <p className="text-gray-600">{faq.answer}</p>
+                          </Collapsible.Content>
+                        </Collapsible.Root>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* About Me Section */}
+              {aboutMe.enabled && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl">{aboutMe.title || "About the Creator"}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <p className="text-gray-700">{aboutMe.description}</p>
+                      {aboutMe.socialLinks && aboutMe.socialLinks.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-3">Connect with me:</h4>
+                          <div className="flex flex-wrap gap-3">
+                            {aboutMe.socialLinks.map((link, index) => (
+                              <a
+                                key={index}
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg border ${themeStyles.border} hover:bg-gray-50 transition-colors`}
+                              >
+                                {getSocialIcon(link.platform)}
+                                <span className="text-sm font-medium capitalize">{link.platform}</span>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Reviews */}
               {reviews.length > 0 && (
                 <Card>
@@ -394,7 +630,7 @@ export function ProductLandingPageV2({
                   </div>
                   <Button
                     onClick={handlePurchase}
-                    className="w-full h-12 text-base font-semibold"
+                    className="w-full h-12 text-base font-semibold bg-black hover:bg-gray-800 text-white"
                     size="lg"
                   >
                     <ShoppingCart className="h-5 w-5 mr-2" />
