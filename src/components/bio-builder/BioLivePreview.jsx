@@ -1,9 +1,9 @@
-import React from 'react'
+import React, { memo } from 'react'
 import Frame from 'react-frame-component'
 import { motion } from 'framer-motion'
 import PreviewContent from './MobilePreview/PreviewContent'
 
-export default function BioLivePreview({ 
+function BioLivePreview({ 
   bio, 
   blocks, 
   theme, 
@@ -274,3 +274,6 @@ function getFontFamily(font) {
   }
   return fonts[font] || fonts.inter
 }
+
+// Use shallow memo for better real-time updates
+export default memo(BioLivePreview)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card'
@@ -44,6 +44,21 @@ export default function BioContentTab({
   loading 
 }) {
   const [showAddBlocks, setShowAddBlocks] = useState(false)
+  
+  // Local state for form inputs to handle typing smoothly
+  const [localTitle, setLocalTitle] = useState(bio?.profile?.title || '')
+  const [localDescription, setLocalDescription] = useState(bio?.profile?.description || '')
+  
+  // Refs for debounce timeouts
+  const titleTimeoutRef = useRef(null)
+  const descriptionTimeoutRef = useRef(null)
+  
+  // Update local state when bio data changes from outside
+  useEffect(() => {
+    console.log('BioContentTab - Bio data update:', bio?.profile) // Debug log
+    setLocalTitle(bio?.profile?.title || '')
+    setLocalDescription(bio?.profile?.description || '')
+  }, [bio?.profile?.title, bio?.profile?.description])
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -70,11 +85,48 @@ export default function BioContentTab({
     setShowAddBlocks(false)
   }
 
-  const handleBioUpdate = (field, value) => {
-    onUpdateBio({
-      [field]: value
-    })
-  }
+  // Debounced update functions for smooth typing
+  const handleTitleChange = useCallback((value) => {
+    setLocalTitle(value)
+    
+    // Clear previous timeout
+    if (titleTimeoutRef.current) {
+      clearTimeout(titleTimeoutRef.current)
+    }
+    
+    // Debounce API call
+    titleTimeoutRef.current = setTimeout(() => {
+      onUpdateBio({ title: value })
+      titleTimeoutRef.current = null
+    }, 500) // 500ms debounce for better UX
+  }, [onUpdateBio])
+  
+  const handleDescriptionChange = useCallback((value) => {
+    setLocalDescription(value)
+    
+    // Clear previous timeout
+    if (descriptionTimeoutRef.current) {
+      clearTimeout(descriptionTimeoutRef.current)
+    }
+    
+    // Debounce API call
+    descriptionTimeoutRef.current = setTimeout(() => {
+      onUpdateBio({ description: value })
+      descriptionTimeoutRef.current = null
+    }, 500) // 500ms debounce for better UX
+  }, [onUpdateBio])
+  
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (titleTimeoutRef.current) {
+        clearTimeout(titleTimeoutRef.current)
+      }
+      if (descriptionTimeoutRef.current) {
+        clearTimeout(descriptionTimeoutRef.current)
+      }
+    }
+  }, [])
 
   if (loading) {
     return (
@@ -103,8 +155,8 @@ export default function BioContentTab({
             <Label htmlFor="bio-title">Display Name</Label>
             <Input
               id="bio-title"
-              value={bio?.title || ''}
-              onChange={(e) => handleBioUpdate('title', e.target.value)}
+              value={localTitle}
+              onChange={(e) => handleTitleChange(e.target.value)}
               placeholder="Your name or brand"
             />
           </div>
@@ -112,8 +164,8 @@ export default function BioContentTab({
             <Label htmlFor="bio-description">Bio Description</Label>
             <Textarea
               id="bio-description"
-              value={bio?.description || ''}
-              onChange={(e) => handleBioUpdate('description', e.target.value)}
+              value={localDescription}
+              onChange={(e) => handleDescriptionChange(e.target.value)}
               placeholder="Tell your audience about yourself"
               rows={3}
             />
@@ -186,51 +238,51 @@ export default function BioContentTab({
                     const Icon = blockType?.icon || MessageSquare
                     
                     return (
-                      <div 
-                        className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all ${
-                          selectedBlock?.id === block.id 
-                            ? 'border-blue-200 bg-blue-50' 
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => onSelectBlock(block)}
-                      >
-                        <SortableItem key={block.id} id={block.id}>
+                      <SortableItem key={block.id} id={block.id}>
+                        <div 
+                          className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all ${
+                            selectedBlock?.id === block.id 
+                              ? 'border-blue-200 bg-blue-50' 
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                          onClick={() => onSelectBlock(block.id)}
+                        >
                           <GripVertical className="h-4 w-4 text-gray-400 cursor-grab" />
-                        </SortableItem>
-                        <Icon className="h-4 w-4 text-gray-600" />
-                        <div className="flex-1">
-                          <div className="font-medium text-sm">{blockType?.label || block.type}</div>
-                          <div className="text-xs text-gray-500">
-                            {block.content?.title || block.content?.text || 'Click to edit'}
+                          <Icon className="h-4 w-4 text-gray-600" />
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">{blockType?.label || block.type}</div>
+                            <div className="text-xs text-gray-500">
+                              {block.content?.title || block.content?.text || 'Click to edit'}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                onToggleBlock(block.id, !block.isActive)
+                              }}
+                            >
+                              {block.isActive ? (
+                                <Eye className="h-4 w-4" />
+                              ) : (
+                                <EyeOff className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                onDeleteBlock(block.id)
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onToggleBlock(block.id, !block.isActive)
-                            }}
-                          >
-                            {block.isActive ? (
-                              <Eye className="h-4 w-4" />
-                            ) : (
-                              <EyeOff className="h-4 w-4" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              onDeleteBlock(block.id)
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
+                      </SortableItem>
                     )
                   })}
                 </div>
@@ -263,10 +315,10 @@ export default function BioContentTab({
 // Simple block editor component
 function BlockEditor({ block, onUpdate }) {
   const [localContent, setLocalContent] = useState(block.content || {})
-  const [updateTimeout, setUpdateTimeout] = useState(null)
+  const timeoutRef = useRef(null)
 
   // Update local content immediately for responsive UI
-  const handleContentUpdate = (field, value) => {
+  const handleContentUpdate = useCallback((field, value) => {
     const newContent = {
       ...localContent,
       [field]: value
@@ -275,33 +327,33 @@ function BlockEditor({ block, onUpdate }) {
     setLocalContent(newContent)
 
     // Clear previous timeout
-    if (updateTimeout) {
-      clearTimeout(updateTimeout)
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
     }
 
     // Debounce the actual update to parent
-    const newTimeout = setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       onUpdate({
         content: newContent
       })
-    }, 300) // 300ms debounce
+      timeoutRef.current = null
+    }, 100) // 100ms debounce - faster response
+  }, [localContent, onUpdate])
 
-    setUpdateTimeout(newTimeout)
-  }
-
-  // Update local content when block prop changes from outside
+  // Update local content when block changes from outside
   useEffect(() => {
     setLocalContent(block.content || {})
-  }, [block.id]) // Only update when block ID changes, not content
+  }, [block.id])
 
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
-      if (updateTimeout) {
-        clearTimeout(updateTimeout)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
       }
     }
-  }, [updateTimeout])
+  }, [])
 
   switch (block.type) {
     case 'header':
@@ -342,7 +394,14 @@ function BlockEditor({ block, onUpdate }) {
             <Label>Text Content</Label>
             <Textarea
               value={localContent?.text || ''}
-              onChange={(e) => handleContentUpdate('text', e.target.value)}
+              onChange={(e) => {
+                const newContent = {
+                  ...localContent,
+                  text: e.target.value
+                }
+                setLocalContent(newContent)
+                handleContentUpdate('text', e.target.value)
+              }}
               placeholder="Enter your text here"
               rows={4}
             />

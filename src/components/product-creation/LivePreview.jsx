@@ -26,23 +26,33 @@ export function LivePreview({ productData, previewMode }) {
       testimonials: JSON.stringify(debouncedProductData.testimonialsData || []),
       faqs: JSON.stringify(debouncedProductData.faqData || []),
       aboutMe: JSON.stringify(debouncedProductData.aboutMeData || {}),
-      themeStyle: debouncedProductData.themeStyle || 'default'
+      themeStyle: debouncedProductData.themeStyle || 'default',
+      // Add preview mode to determine layout
+      previewMode: previewMode
     })
     
     return `/preview/your-profile/preview-product?${params.toString()}`
-  }, [debouncedProductData])
+  }, [debouncedProductData, previewMode])
 
   // Device Frame Component with proper viewport sizing
   const DeviceFrame = ({ children, mode }) => {
     if (mode === 'mobile') {
-      // Compact mobile preview for sidebar
+      // Compact mobile preview for sidebar - OnePlus 7 dimensions (15% larger total)
       return (
-        <div className="mx-auto" style={{ width: '233px' }}>
-          {/* iPhone Frame - Compact */}
-          <div className="bg-black rounded-[18px] shadow-lg" style={{ padding: '4px' }}>
-            <div className="bg-white rounded-[14px] overflow-hidden relative" style={{ height: '407px', width: '221px' }}>
-              {/* iPhone Dynamic Island */}
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 bg-black rounded-b-lg z-10" style={{ width: '50px', height: '12px' }}></div>
+        <div className="mx-auto" style={{ width: '277px' }}>
+          {/* OnePlus 7 Frame - Premium */}
+          <div className="rounded-[20px] shadow-2xl" style={{ 
+            padding: '3px',
+            background: 'linear-gradient(145deg, #1f2937 0%, #111827 50%, #000000 100%)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+          }}>
+            <div className="bg-white rounded-[17px] overflow-hidden relative" style={{ 
+              height: '546px', 
+              width: '265px',
+              boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+            }}>
+              {/* OnePlus 7 Notch */}
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 bg-black rounded-b-lg z-10" style={{ width: '60px', height: '8px' }}></div>
               
               {/* Status Bar */}
               <div className="absolute left-2 right-2 flex justify-between items-center text-black font-medium z-20" style={{ top: '4px', fontSize: '7px' }}>
@@ -66,9 +76,9 @@ export function LivePreview({ productData, previewMode }) {
                 overflow: 'hidden'
               }}>
                 <div style={{
-                  width: '393px', // iPhone 17 actual width
-                  height: '850px', // iPhone 17 actual height
-                  transform: 'scale(0.56)', // Scale to fit (221px / 393px ≈ 0.56)
+                  width: '375px', // Mobile viewport width
+                  height: '100%', // Fill available height
+                  transform: 'scale(0.707)', // Scale to fit (265px / 375px ≈ 0.707)
                   transformOrigin: 'top left',
                   pointerEvents: 'auto' // Enable interactions for scrolling
                 }}>
@@ -81,21 +91,58 @@ export function LivePreview({ productData, previewMode }) {
       )
     }
 
-    // Desktop Frame - Pixel perfect match to target
+    // Desktop Frame - 15% larger total
     return (
-      <div className="w-full" style={{ width: '552px', margin: '0 auto' }}>
-        {/* MacBook Frame - Complete frame with bottom */}
-        <div className="bg-gray-800 rounded-xl" style={{ padding: '6px' }}>
-          <div className="bg-white rounded-lg overflow-hidden" style={{ width: '100%', height: '319px' }}>
-            {/* Browser Bar - Pixel perfect */}
-            <div className="bg-gray-100 flex items-center" style={{ height: '28px', paddingLeft: '10px', paddingRight: '10px' }}>
-              <div className="flex" style={{ gap: '6px' }}>
-                <div className="rounded-full bg-red-500" style={{ width: '12px', height: '12px' }}></div>
-                <div className="rounded-full bg-yellow-400" style={{ width: '12px', height: '12px' }}></div>
-                <div className="rounded-full bg-green-500" style={{ width: '12px', height: '12px' }}></div>
+      <div className="w-full" style={{ width: '637px', margin: '0 auto' }}>
+        {/* MacBook Frame - Premium */}
+        <div className="rounded-2xl shadow-2xl" style={{ 
+          padding: '8px',
+          background: 'linear-gradient(145deg, #374151 0%, #1f2937 50%, #111827 100%)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+        }}>
+          <div className="bg-white rounded-xl overflow-hidden" style={{ 
+            width: '100%', 
+            height: '369px',
+            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1)'
+          }}>
+            {/* Browser Bar - Premium */}
+            <div className="flex items-center" style={{ 
+              height: '32px', 
+              paddingLeft: '12px', 
+              paddingRight: '12px',
+              background: 'linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%)',
+              borderBottom: '1px solid rgba(203, 213, 225, 0.6)'
+            }}>
+              <div className="flex" style={{ gap: '8px' }}>
+                <div className="rounded-full" style={{ 
+                  width: '12px', 
+                  height: '12px',
+                  background: 'linear-gradient(145deg, #ef4444, #dc2626)',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+                }}></div>
+                <div className="rounded-full" style={{ 
+                  width: '12px', 
+                  height: '12px',
+                  background: 'linear-gradient(145deg, #eab308, #ca8a04)',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+                }}></div>
+                <div className="rounded-full" style={{ 
+                  width: '12px', 
+                  height: '12px',
+                  background: 'linear-gradient(145deg, #22c55e, #16a34a)',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+                }}></div>
               </div>
-              <div className="flex-1 bg-white rounded border mx-3" style={{ height: '18px', paddingLeft: '8px', paddingRight: '8px', display: 'flex', alignItems: 'center' }}>
-                <span style={{ fontSize: '9px', color: '#666' }}>superlinks.ai/your-product</span>
+              <div className="flex-1 bg-white rounded-md mx-4" style={{ 
+                height: '20px', 
+                paddingLeft: '10px', 
+                paddingRight: '10px', 
+                display: 'flex', 
+                alignItems: 'center',
+                border: '1px solid #e2e8f0',
+                boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.05)'
+              }}>
+                <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '500' }}>superlinks.ai/your-product</span>
               </div>
             </div>
 
@@ -108,7 +155,7 @@ export function LivePreview({ productData, previewMode }) {
               <div style={{
                 width: '1440px', // Full desktop width
                 height: '750px', // Full desktop height
-                transform: 'scale(0.38)', // Scale down to fit (552px / 1440px ≈ 0.38)
+                transform: 'scale(0.439)', // Scale down to fit (637px / 1440px ≈ 0.439) - 15% larger
                 transformOrigin: 'top left',
                 pointerEvents: 'auto' // Enable interactions for scrolling
               }}>
@@ -123,17 +170,16 @@ export function LivePreview({ productData, previewMode }) {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, #f1f5f9 0%, #d1d5db 30%, #9ca3af 70%, #6b7280 100%)',
+      background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%)',
       backgroundImage: `
-        linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.4) 1px, transparent 1px),
-        linear-gradient(rgba(30, 41, 59, 0.15) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(30, 41, 59, 0.15) 1px, transparent 1px),
-        radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.12) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.12) 0%, transparent 50%)
+        radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.1) 0%, transparent 50%),
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
       `,
-      backgroundSize: '24px 24px, 24px 24px, 24px 24px, 24px 24px, 600px 600px, 600px 600px',
-      backgroundPosition: '0 0, 0 0, 12px 12px, 12px 12px, 0 0, 0 0',
+      backgroundSize: '800px 800px, 800px 800px, 1200px 600px, 40px 40px, 40px 40px',
+      backgroundPosition: '0 0, 0 0, 0 0, 0 0, 20px 20px',
       minHeight: '100%',
       display: 'flex',
       alignItems: 'center',

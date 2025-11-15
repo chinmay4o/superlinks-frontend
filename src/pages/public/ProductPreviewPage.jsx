@@ -52,6 +52,7 @@ export function ProductPreviewPage() {
     }
     
     const themeStyle = searchParams.get('themeStyle') || 'default'
+    const previewMode = searchParams.get('previewMode') || 'desktop'
     
     return {
       _id: 'preview-id',
@@ -91,6 +92,8 @@ export function ProductPreviewPage() {
       advanced: {
         themeStyle: themeStyle
       },
+      // Add preview mode
+      previewMode: previewMode,
       stats: {
         views: 0,
         sales: 0,
@@ -122,6 +125,7 @@ export function ProductPreviewPage() {
         mockReviews={mockReviews}
         mockReviewsSummary={mockReviewsSummary}
         isPreview={true}
+        previewMode={mockProduct.previewMode}
       />
     </div>
   )

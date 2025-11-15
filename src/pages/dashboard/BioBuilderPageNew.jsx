@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
-import { useBioData } from '../../hooks/useBioData'
+import { useBioDataSimple } from '../../hooks/useBioDataSimple'
 
 // Import tab components
 import BioContentTab from '../../components/bio-builder/tabs/BioContentTab'
@@ -26,33 +26,30 @@ export function BioBuilderPageNew() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('content')
   const [previewMode, setPreviewMode] = useState('mobile') // 'mobile' | 'desktop'
-  const [saving, setSaving] = useState(false)
 
-  // Use the bio data hook
+  // Use the simplified bio data hook
   const {
-    bio,
-    blocks,
+    bioData,
     selectedBlock,
+    selectedBlockId,
     loading,
-    bioLoading,
-    blocksLoading,
-    hasUnsavedChanges,
-    updateBioProfile,
-    updateBioCustomization,
+    saving,
+    handleInputChange,
+    updateProfile,
+    updateCustomization,
     addBlock,
     updateBlock,
     deleteBlock,
     reorderBlocks,
     toggleBlockVisibility,
-    uploadBioImage,
-    refresh,
+    uploadImage,
     saveChanges,
-    setSelectedBlock
-  } = useBioData()
+    setSelectedBlockId,
+    refresh
+  } = useBioDataSimple()
 
   const handleSave = async (isDraft = false) => {
     try {
-      setSaving(true)
       await saveChanges()
       
       if (isDraft) {
@@ -63,8 +60,6 @@ export function BioBuilderPageNew() {
     } catch (error) {
       toast.error('Failed to save bio')
       console.error('Error saving bio:', error)
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -162,36 +157,36 @@ export function BioBuilderPageNew() {
               {/* Tab Content */}
               <TabsContent value="content" className="space-y-6">
                 <BioContentTab
-                  bio={bio}
-                  blocks={blocks}
+                  bio={bioData}
+                  blocks={bioData.blocks}
                   selectedBlock={selectedBlock}
-                  onSelectBlock={setSelectedBlock}
+                  onSelectBlock={setSelectedBlockId}
                   onAddBlock={addBlock}
                   onUpdateBlock={updateBlock}
                   onDeleteBlock={deleteBlock}
                   onToggleBlock={toggleBlockVisibility}
                   onReorderBlocks={reorderBlocks}
-                  onUpdateBio={updateBioProfile}
-                  loading={blocksLoading}
+                  onUpdateBio={updateProfile}
+                  loading={loading}
                 />
               </TabsContent>
 
               <TabsContent value="theme" className="space-y-6">
                 <BioThemeTab
-                  bio={bio}
-                  theme={bio?.customization}
-                  onUpdateTheme={updateBioCustomization}
-                  onUploadImage={uploadBioImage}
-                  loading={bioLoading}
+                  bio={bioData}
+                  theme={bioData.customization}
+                  onUpdateTheme={updateCustomization}
+                  onUploadImage={uploadImage}
+                  loading={loading}
                 />
               </TabsContent>
 
               <TabsContent value="settings" className="space-y-6">
                 <BioSettingsTab
-                  bio={bio}
+                  bio={bioData}
                   user={user}
-                  onUpdateBio={updateBioProfile}
-                  loading={bioLoading}
+                  onUpdateBio={updateProfile}
+                  loading={loading}
                 />
               </TabsContent>
             </Tabs>
@@ -205,9 +200,9 @@ export function BioBuilderPageNew() {
             <div className="preview-panel-header flex items-center justify-between p-4">
               <div className="flex items-center gap-4">
                 <h2 className="font-medium">Preview</h2>
-                {hasUnsavedChanges && (
-                  <span className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
-                    Unsaved changes
+                {saving && (
+                  <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                    Saving...
                   </span>
                 )}
               </div>
@@ -234,12 +229,13 @@ export function BioBuilderPageNew() {
             {/* Preview Content */}
             <div className="flex-1 overflow-hidden">
               <BioLivePreview
-                bio={bio}
-                blocks={blocks?.filter(b => b.isActive) || []}
-                theme={bio?.customization}
+                bio={bioData}
+                blocks={bioData.blocks?.filter(b => b.isActive) || []}
+                theme={bioData.customization}
                 username={user?.username}
                 previewMode={previewMode}
-                loading={bioLoading}
+                loading={loading}
+                key={`preview-${JSON.stringify(bioData.profile)}-${JSON.stringify(bioData.customization)}-${bioData.blocks?.length || 0}`}
               />
             </div>
           </div>

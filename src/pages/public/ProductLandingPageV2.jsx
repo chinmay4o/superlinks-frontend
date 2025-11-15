@@ -50,6 +50,7 @@ export function ProductLandingPageV2({
   mockReviews = null,
   mockReviewsSummary = null,
   isPreview = false,
+  previewMode = 'desktop',
 }) {
   const { slug, username, productSlug } = useParams();
   const navigate = useNavigate();
@@ -358,11 +359,11 @@ export function ProductLandingPageV2({
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className={`${previewMode === 'mobile' ? 'max-w-none px-4 py-4' : 'max-w-7xl px-4 sm:px-6 lg:px-8 py-8'} mx-auto`}>
+        <div className={`grid ${previewMode === 'mobile' ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-4'} ${previewMode === 'mobile' ? 'gap-4' : 'gap-8'}`}>
           {/* Main Content Area */}
-          <div className="lg:col-span-3 order-1 lg:order-1">
-            <div className="space-y-8">
+          <div className={`${previewMode === 'mobile' ? '' : 'lg:col-span-3'} order-1 lg:order-1`}>
+            <div className={`${previewMode === 'mobile' ? 'space-y-4' : 'space-y-8'}`}>
               {/* Product Hero Image */}
               <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden border">
                 <img
@@ -611,8 +612,8 @@ export function ProductLandingPageV2({
           </div>
 
           {/* Right Sidebar */}
-          <div className="lg:col-span-1 order-2 lg:order-2">
-            <div className="space-y-6 lg:sticky lg:top-24">
+          <div className={`${previewMode === 'mobile' ? '' : 'lg:col-span-1'} order-2 lg:order-2`}>
+            <div className={`space-y-6 ${previewMode === 'mobile' ? '' : 'lg:sticky lg:top-24'}`}>
               {/* Product Info Card */}
               <Card>
                 <CardHeader className="pb-4">

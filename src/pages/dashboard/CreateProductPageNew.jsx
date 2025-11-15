@@ -342,12 +342,7 @@ export function CreateProductPageNew() {
           </div>
           
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" disabled={saving} onClick={() => handleSave(true)}>
-              {saving ? 'Saving...' : 'Save Draft'}
-            </Button>
-            <Button onClick={() => handleSave(false)} disabled={saving} size="sm">
-              {saving ? 'Saving...' : 'Save Changes'}
-            </Button>
+            {/* Buttons moved to left sidebar bottom */}
           </div>
         </div>
       </header>
@@ -355,8 +350,8 @@ export function CreateProductPageNew() {
       {/* Full Screen Main Content - 40/60 Split */}
       <div className="h-[calc(100vh-64px)] flex">
         {/* Left Panel - Form Content (40%) */}
-        <div className="w-2/5 overflow-y-auto bg-background">
-          <div className="p-6">
+        <div className="w-2/5 bg-background flex flex-col">
+          <div className="flex-1 overflow-y-auto p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="page-details" className="flex items-center gap-2">
@@ -396,6 +391,27 @@ export function CreateProductPageNew() {
                 </TabsContent>
               </div>
             </Tabs>
+          </div>
+          
+          {/* Fixed Save Buttons at Bottom */}
+          <div className="border-t bg-background p-6">
+            <div className="flex items-center gap-3 justify-center">
+              <Button 
+                variant="outline" 
+                disabled={saving} 
+                onClick={() => handleSave(true)}
+                className="h-11 w-[40%]"
+              >
+                {saving ? 'Saving...' : 'Save Draft'}
+              </Button>
+              <Button 
+                onClick={() => handleSave(false)} 
+                disabled={saving}
+                className="h-11 w-[40%]"
+              >
+                {saving ? 'Saving...' : 'Publish Product'}
+              </Button>
+            </div>
           </div>
         </div>
 

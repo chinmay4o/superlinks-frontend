@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, memo } from 'react'
 import { motion } from 'framer-motion'
 import { 
   Instagram, Twitter, Youtube, Linkedin, Facebook, Globe, Mail,
@@ -15,7 +15,7 @@ const SOCIAL_ICONS = {
   email: Mail
 }
 
-export default function PreviewContent({ blocks, theme, username }) {
+function PreviewContent({ blocks, theme, username }) {
   // Ensure we have safe defaults
   const safeBlocks = blocks || []
   const safeTheme = {
@@ -846,3 +846,6 @@ export default function PreviewContent({ blocks, theme, username }) {
     </div>
   )
 }
+
+// Use default memo for better real-time updates
+export default memo(PreviewContent)

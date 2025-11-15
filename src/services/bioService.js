@@ -55,8 +55,12 @@ const bioService = {
   updateBioProfile: async (profileData) => {
     const response = await api.put('/bio/profile', profileData)
     
-    // Clear bio cache
-    cacheService.delete('bio-data')
+    // Update cached version instead of clearing to prevent refresh
+    const cached = cacheService.get('bio-data')
+    if (cached && cached.bio) {
+      cached.bio.profile = { ...cached.bio.profile, ...profileData }
+      cacheService.set('bio-data', cached, 10 * 60 * 1000)
+    }
     
     return response.data
   },
@@ -65,8 +69,8 @@ const bioService = {
   updateBioCustomization: async (customizationData) => {
     const response = await api.put('/bio/customization', customizationData)
     
-    // Don't clear cache for customization as it's auto-saved frequently
-    // Just update the cached version
+    // Don't clear cache for customization - let React state handle real-time updates
+    // Update cached version optimistically
     const cached = cacheService.get('bio-data')
     if (cached && cached.bio) {
       cached.bio.customization = { ...cached.bio.customization, ...customizationData }
@@ -90,15 +94,8 @@ const bioService = {
   updateBlock: async (blockId, blockData) => {
     const response = await api.put(`/bio/blocks/${blockId}`, blockData)
     
-    // Update cached blocks if available
-    const cached = cacheService.get('bio-data')
-    if (cached && cached.bio && cached.bio.blocks) {
-      const blockIndex = cached.bio.blocks.findIndex(block => block.id === blockId)
-      if (blockIndex !== -1) {
-        cached.bio.blocks[blockIndex] = { ...cached.bio.blocks[blockIndex], ...blockData }
-        cacheService.set('bio-data', cached, 10 * 60 * 1000)
-      }
-    }
+    // Don't clear cache for block updates - let React state handle it
+    // This prevents page refreshes during real-time editing
     
     return response.data
   },
@@ -107,12 +104,8 @@ const bioService = {
   deleteBlock: async (blockId) => {
     const response = await api.delete(`/bio/blocks/${blockId}`)
     
-    // Update cached blocks if available
-    const cached = cacheService.get('bio-data')
-    if (cached && cached.bio && cached.bio.blocks) {
-      cached.bio.blocks = cached.bio.blocks.filter(block => block.id !== blockId)
-      cacheService.set('bio-data', cached, 10 * 60 * 1000)
-    }
+    // Clear cache to maintain consistency with React state
+    cacheService.delete('bio-data')
     
     return response.data
   },
@@ -121,18 +114,7 @@ const bioService = {
   reorderBlocks: async (blockOrders) => {
     const response = await api.put('/bio/blocks/reorder', { blockOrders })
     
-    // Update cached block orders if available
-    const cached = cacheService.get('bio-data')
-    if (cached && cached.bio && cached.bio.blocks) {
-      // Sort blocks by new order
-      const reorderedBlocks = cached.bio.blocks.sort((a, b) => {
-        const orderA = blockOrders.find(order => order.id === a.id)?.order || 0
-        const orderB = blockOrders.find(order => order.id === b.id)?.order || 0
-        return orderA - orderB
-      })
-      cached.bio.blocks = reorderedBlocks
-      cacheService.set('bio-data', cached, 10 * 60 * 1000)
-    }
+    // Don't clear cache - let React state handle reordering
     
     return response.data
   },
@@ -141,15 +123,8 @@ const bioService = {
   toggleBlockVisibility: async (blockId, isActive) => {
     const response = await api.patch(`/bio/blocks/${blockId}/toggle`, { isActive })
     
-    // Update cached block visibility if available
-    const cached = cacheService.get('bio-data')
-    if (cached && cached.bio && cached.bio.blocks) {
-      const blockIndex = cached.bio.blocks.findIndex(block => block.id === blockId)
-      if (blockIndex !== -1) {
-        cached.bio.blocks[blockIndex].isActive = isActive
-        cacheService.set('bio-data', cached, 10 * 60 * 1000)
-      }
-    }
+    // Clear cache to force fresh data fetch
+    cacheService.delete('bio-data')
     
     return response.data
   },

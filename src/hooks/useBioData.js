@@ -155,36 +155,38 @@ export const useBioData = () => {
   }, [])
 
   // Add new block with optimistic updates
-  const addBlock = useCallback(async (blockData) => {
+  const addBlock = useCallback(async (blockType) => {
     try {
       setSaving(true)
+      setError(null)
       
-      const newBlock = {
-        id: `temp-${Date.now()}`,
-        ...blockData,
-        order: blocks.length
+      const blockData = {
+        type: blockType,
+        content: {},
+        order: blocks.length,
+        isActive: true
       }
-      
-      // Optimistic update
-      setBlocks(prev => [...prev, newBlock])
-      setSelectedBlock(newBlock)
       
       const response = await bioService.addBlock(blockData)
       
-      // Replace temp block with real block
-      setBlocks(prev => prev.map(block => 
-        block.id === newBlock.id ? response.block : block
-      ))
-      setSelectedBlock(response.block)
+      // Update state with server response
+      if (response.bio && response.bio.blocks) {
+        setBlocks(response.bio.blocks)
+        setBio(response.bio)
+        
+        // Select the newly added block
+        if (response.block) {
+          setSelectedBlock(response.block)
+        }
+      }
       
       toast.success('Block added successfully')
       
     } catch (error) {
       console.error('Error adding block:', error)
-      toast.error('Failed to add block')
-      
-      // Revert optimistic update
-      setBlocks(prev => prev.filter(block => block.id !== `temp-${Date.now()}`))
+      const errorMessage = error.response?.data?.message || 'Failed to add block'
+      setError(errorMessage)
+      toast.error(errorMessage)
       throw error
     } finally {
       setSaving(false)
@@ -216,33 +218,37 @@ export const useBioData = () => {
     }
   }, [selectedBlock, fetchBio])
 
-  // Delete block with optimistic updates
+  // Delete block
   const deleteBlock = useCallback(async (blockId) => {
     try {
       setSaving(true)
+      setError(null)
       
-      // Optimistic update
-      setBlocks(prev => prev.filter(block => block.id !== blockId))
+      const response = await bioService.deleteBlock(blockId)
       
-      if (selectedBlock && selectedBlock.id === blockId) {
-        setSelectedBlock(null)
+      // Update state with server response
+      if (response.bio && response.bio.blocks) {
+        setBlocks(response.bio.blocks)
+        setBio(response.bio)
+        
+        // Clear selected block if it was deleted
+        if (selectedBlock && selectedBlock.id === blockId) {
+          setSelectedBlock(null)
+        }
       }
-      
-      await bioService.deleteBlock(blockId)
       
       toast.success('Block deleted successfully')
       
     } catch (error) {
       console.error('Error deleting block:', error)
-      toast.error('Failed to delete block')
-      
-      // Revert optimistic update
-      fetchBio()
+      const errorMessage = error.response?.data?.message || 'Failed to delete block'
+      setError(errorMessage)
+      toast.error(errorMessage)
       throw error
     } finally {
       setSaving(false)
     }
-  }, [selectedBlock, fetchBio])
+  }, [selectedBlock])
 
   // Reorder blocks with optimistic updates
   const reorderBlocks = useCallback(async (newBlocks) => {
@@ -270,26 +276,35 @@ export const useBioData = () => {
   // Toggle block visibility
   const toggleBlockVisibility = useCallback(async (blockId, isActive) => {
     try {
-      // Optimistic update
-      setBlocks(prev => prev.map(block => 
-        block.id === blockId ? { ...block, isActive } : block
-      ))
+      setSaving(true)
       
-      await bioService.toggleBlockVisibility(blockId, isActive)
+      // Call API and use server response as source of truth
+      const response = await bioService.toggleBlockVisibility(blockId, isActive)
+      
+      // Update state with server response
+      if (response.bio && response.bio.blocks) {
+        setBlocks(response.bio.blocks)
+        setBio(response.bio)
+        
+        // Update selected block if it's the one being toggled
+        if (selectedBlock && selectedBlock.id === blockId) {
+          const updatedBlock = response.bio.blocks.find(block => block.id === blockId)
+          if (updatedBlock) {
+            setSelectedBlock(updatedBlock)
+          }
+        }
+      }
       
       toast.success(`Block ${isActive ? 'enabled' : 'disabled'} successfully`)
       
     } catch (error) {
       console.error('Error toggling block visibility:', error)
       toast.error('Failed to update block visibility')
-      
-      // Revert optimistic update
-      setBlocks(prev => prev.map(block => 
-        block.id === blockId ? { ...block, isActive: !isActive } : block
-      ))
       throw error
+    } finally {
+      setSaving(false)
     }
-  }, [])
+  }, [selectedBlock])
 
   // Upload bio image
   const uploadBioImage = useCallback(async (imageFile, type = 'avatar') => {
