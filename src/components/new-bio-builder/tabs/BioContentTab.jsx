@@ -385,7 +385,7 @@ function BlockEditor({ block, onUpdate }) {
           </div>
         </div>
       )
-    
+
     case 'text':
       return (
         <div className="space-y-4">
@@ -407,7 +407,31 @@ function BlockEditor({ block, onUpdate }) {
           </div>
         </div>
       )
-    
+
+    case 'links':
+      return (
+        <LinksBlockEditor
+          links={localContent?.links || []}
+          onChange={(newLinks) => {
+            const newContent = { ...localContent, links: newLinks }
+            setLocalContent(newContent)
+            onUpdate({ content: newContent })
+          }}
+        />
+      )
+
+    case 'social':
+      return (
+        <SocialBlockEditor
+          socialLinks={localContent?.links || {}}
+          onChange={(newLinks) => {
+            const newContent = { ...localContent, links: newLinks }
+            setLocalContent(newContent)
+            onUpdate({ content: newContent })
+          }}
+        />
+      )
+
     default:
       return (
         <div className="p-4 border border-dashed rounded-lg text-center text-gray-500">
@@ -416,4 +440,160 @@ function BlockEditor({ block, onUpdate }) {
         </div>
       )
   }
+}
+
+// Links Block Editor Component
+function LinksBlockEditor({ links, onChange }) {
+  const [editingIndex, setEditingIndex] = useState(null)
+
+  const addLink = () => {
+    const newLink = {
+      id: `link-${Date.now()}`,
+      title: 'New Link',
+      url: 'https://',
+      icon: 'link'
+    }
+    onChange([...links, newLink])
+    setEditingIndex(links.length)
+  }
+
+  const updateLink = (index, field, value) => {
+    const newLinks = [...links]
+    newLinks[index] = { ...newLinks[index], [field]: value }
+    onChange(newLinks)
+  }
+
+  const deleteLink = (index) => {
+    const newLinks = links.filter((_, i) => i !== index)
+    onChange(newLinks)
+    setEditingIndex(null)
+  }
+
+  const moveLink = (index, direction) => {
+    const newIndex = index + direction
+    if (newIndex < 0 || newIndex >= links.length) return
+    const newLinks = [...links]
+    const [removed] = newLinks.splice(index, 1)
+    newLinks.splice(newIndex, 0, removed)
+    onChange(newLinks)
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Label>Links ({links.length})</Label>
+        <Button size="sm" onClick={addLink}>
+          <Plus className="h-4 w-4 mr-1" />
+          Add Link
+        </Button>
+      </div>
+
+      {links.length === 0 ? (
+        <div className="p-4 border border-dashed rounded-lg text-center text-gray-500">
+          <p>No links yet</p>
+          <p className="text-sm">Click "Add Link" to create your first link</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {links.map((link, index) => (
+            <div key={link.id} className="border rounded-lg p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-sm">{link.title || 'Untitled'}</span>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => moveLink(index, -1)}
+                    disabled={index === 0}
+                  >
+                    ↑
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => moveLink(index, 1)}
+                    disabled={index === links.length - 1}
+                  >
+                    ↓
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditingIndex(editingIndex === index ? null : index)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => deleteLink(index)}
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                </div>
+              </div>
+
+              {editingIndex === index && (
+                <div className="space-y-2 pt-2 border-t">
+                  <div>
+                    <Label className="text-xs">Title</Label>
+                    <Input
+                      value={link.title || ''}
+                      onChange={(e) => updateLink(index, 'title', e.target.value)}
+                      placeholder="Link title"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">URL</Label>
+                    <Input
+                      value={link.url || ''}
+                      onChange={(e) => updateLink(index, 'url', e.target.value)}
+                      placeholder="https://example.com"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Social Block Editor Component
+function SocialBlockEditor({ socialLinks, onChange }) {
+  const SOCIAL_PLATFORMS = [
+    { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/username' },
+    { key: 'twitter', label: 'Twitter/X', placeholder: 'https://twitter.com/username' },
+    { key: 'youtube', label: 'YouTube', placeholder: 'https://youtube.com/@channel' },
+    { key: 'linkedin', label: 'LinkedIn', placeholder: 'https://linkedin.com/in/username' },
+    { key: 'facebook', label: 'Facebook', placeholder: 'https://facebook.com/username' },
+    { key: 'website', label: 'Website', placeholder: 'https://yourwebsite.com' },
+    { key: 'email', label: 'Email', placeholder: 'mailto:you@example.com' }
+  ]
+
+  const updateSocialLink = (key, value) => {
+    onChange({ ...socialLinks, [key]: value })
+  }
+
+  return (
+    <div className="space-y-4">
+      <Label>Social Links</Label>
+      <p className="text-xs text-gray-500">Add your social media profile URLs</p>
+
+      <div className="space-y-3">
+        {SOCIAL_PLATFORMS.map((platform) => (
+          <div key={platform.key}>
+            <Label className="text-xs">{platform.label}</Label>
+            <Input
+              value={socialLinks[platform.key] || ''}
+              onChange={(e) => updateSocialLink(platform.key, e.target.value)}
+              placeholder={platform.placeholder}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
