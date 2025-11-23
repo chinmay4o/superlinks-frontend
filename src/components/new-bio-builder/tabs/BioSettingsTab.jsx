@@ -13,22 +13,22 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-export default function BioSettingsTab({ 
-  bio, 
-  user, 
-  onUpdateBio, 
-  loading 
+export default function BioSettingsTab({
+  bio,
+  user,
+  onUpdateSettings,
+  loading
 }) {
-  const [customDomain, setCustomDomain] = useState(bio?.customDomain || '')
-  const [isPublished, setIsPublished] = useState(bio?.isPublished || false)
+  const [customDomain, setCustomDomain] = useState(bio?.settings?.customDomain || '')
+  const [isPublished, setIsPublished] = useState(bio?.settings?.isPublished || false)
   const [seoSettings, setSeoSettings] = useState({
-    metaTitle: bio?.seoTitle || '',
-    metaDescription: bio?.seoDescription || '',
-    keywords: bio?.seoKeywords || ''
+    metaTitle: bio?.settings?.seoTitle || '',
+    metaDescription: bio?.settings?.seoDescription || '',
+    keywords: bio?.settings?.seoKeywords || ''
   })
 
   const handleSettingUpdate = (field, value) => {
-    onUpdateBio({
+    onUpdateSettings({
       [field]: value
     })
   }
@@ -36,7 +36,7 @@ export default function BioSettingsTab({
   const handleSeoUpdate = (field, value) => {
     const newSeoSettings = { ...seoSettings, [field]: value }
     setSeoSettings(newSeoSettings)
-    onUpdateBio({
+    onUpdateSettings({
       [`seo${field.charAt(0).toUpperCase() + field.slice(1)}`]: value
     })
   }
@@ -45,7 +45,7 @@ export default function BioSettingsTab({
     const newPublishState = !isPublished
     setIsPublished(newPublishState)
     handleSettingUpdate('isPublished', newPublishState)
-    
+
     if (newPublishState) {
       toast.success('Bio is now live!')
     } else {

@@ -37,6 +37,7 @@ export function BioBuilderPageNew() {
     handleInputChange,
     updateProfile,
     updateCustomization,
+    updateSettings,
     addBlock,
     updateBlock,
     deleteBlock,
@@ -185,7 +186,7 @@ export function BioBuilderPageNew() {
                 <BioSettingsTab
                   bio={bioData}
                   user={user}
-                  onUpdateBio={updateProfile}
+                  onUpdateSettings={updateSettings}
                   loading={loading}
                 />
               </TabsContent>

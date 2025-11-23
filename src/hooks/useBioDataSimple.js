@@ -186,6 +186,14 @@ export const useBioDataSimple = () => {
     }))
   }, [])
 
+  // Update settings directly (real-time updates)
+  const updateSettings = useCallback((settingsUpdates) => {
+    setBioData(prev => ({
+      ...prev,
+      settings: { ...prev.settings, ...settingsUpdates }
+    }))
+  }, [])
+
   // Add new block
   const addBlock = useCallback(async (blockType) => {
     const newBlock = createNewBlock(blockType, bioData.blocks.length, bioData.profile)
@@ -349,17 +357,20 @@ export const useBioDataSimple = () => {
   const saveChanges = useCallback(async () => {
     try {
       setSaving(true)
-      
+
       // Save profile
       await bioService.updateBioProfile(bioData.profile)
-      
+
       // Save customization
       await bioService.updateBioCustomization(bioData.customization)
-      
+
+      // Save settings
+      await bioService.updateBioSettings(bioData.settings)
+
       // Note: Blocks are saved individually when modified for better UX
-      
+
       toast.success('Bio saved successfully!')
-      
+
     } catch (error) {
       console.error('Error saving bio:', error)
       toast.error('Failed to save bio')
@@ -396,15 +407,16 @@ export const useBioDataSimple = () => {
     bioData,
     selectedBlock,
     selectedBlockId,
-    
+
     // States
     loading,
     saving,
-    
+
     // Actions
     handleInputChange,
     updateProfile,
     updateCustomization,
+    updateSettings,
     addBlock,
     updateBlock,
     deleteBlock,
