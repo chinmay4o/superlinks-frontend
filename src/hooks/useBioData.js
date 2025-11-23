@@ -135,24 +135,25 @@ export const useBioData = () => {
     }
   }, [fetchBio])
 
-  // Update bio customization with debouncing
+  // Update bio customization with optimistic updates
   const updateBioCustomization = useCallback(async (customizationData) => {
+    // Optimistic update - update local state immediately for instant preview
+    setBio(prev => ({
+      ...prev,
+      customization: { ...prev.customization, ...customizationData }
+    }))
+
     try {
-      // Don't show saving indicator for customization as it's frequent
+      // Save to backend
       await bioService.updateBioCustomization(customizationData)
-      
-      // Update local state
-      setBio(prev => ({
-        ...prev,
-        customization: { ...prev.customization, ...customizationData }
-      }))
-      
     } catch (error) {
       console.error('Error updating bio customization:', error)
       toast.error('Failed to save customization')
+      // Revert on error by refetching
+      fetchBio()
       throw error
     }
-  }, [])
+  }, [fetchBio])
 
   // Add new block with optimistic updates
   const addBlock = useCallback(async (blockData) => {

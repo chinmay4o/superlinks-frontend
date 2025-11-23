@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { memo } from 'react'
 import Frame from 'react-frame-component'
 import { motion } from 'framer-motion'
 import './MobilePreview.css'
 import PreviewContent from './PreviewContent'
 
-export default function MobilePreview({ blocks, theme, username }) {
+function MobilePreview({ blocks, theme, username }) {
   const previewUrl = `superlinks.ai/${username || 'username'}`
   
   // Ensure theme has default values to prevent null errors
@@ -155,3 +155,6 @@ function getFontFamily(font) {
   }
   return fonts[font] || fonts.inter
 }
+
+// Memoize to prevent unnecessary re-renders when props haven't changed
+export default memo(MobilePreview)
