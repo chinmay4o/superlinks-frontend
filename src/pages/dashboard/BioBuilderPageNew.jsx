@@ -12,11 +12,11 @@ import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
 import { useBioDataSimple } from '../../hooks/useBioDataSimple'
 
-// Import tab components
-import BioContentTab from '../../components/bio-builder/tabs/BioContentTab'
-import BioThemeTab from '../../components/bio-builder/tabs/BioThemeTab'
-import BioSettingsTab from '../../components/bio-builder/tabs/BioSettingsTab'
-import BioLivePreview from '../../components/bio-builder/BioLivePreviewNew'
+// Import tab components (from new-bio-builder)
+import BioContentTab from '../../components/new-bio-builder/tabs/BioContentTab'
+import BioThemeTab from '../../components/new-bio-builder/tabs/BioThemeTab'
+import BioSettingsTab from '../../components/new-bio-builder/tabs/BioSettingsTab'
+import BioLivePreview from '../../components/new-bio-builder/BioLivePreview'
 
 // Import CSS
 import '../../styles/bio-builder.css'
