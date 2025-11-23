@@ -146,9 +146,54 @@ export function ProductLandingPage() {
     return null
   }
 
-  const mainImage = product.images?.cover?.url || '/placeholder-product.jpg'
+  // Create a proper fallback SVG as data URL to avoid 403 errors
+  const generatePlaceholderSvg = (title) => {
+    const encoded = encodeURIComponent(`
+      <svg width="400" height="225" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="225" fill="#f1f5f9"/>
+        <text x="200" y="100" text-anchor="middle" fill="#64748b" font-family="Arial" font-size="16">
+          ${title || 'Product Image'}
+        </text>
+        <text x="200" y="130" text-anchor="middle" fill="#94a3b8" font-family="Arial" font-size="12">
+          No image available
+        </text>
+      </svg>
+    `)
+    return `data:image/svg+xml,${encoded}`
+  }
+
+  const placeholderImage = generatePlaceholderSvg(product.title)
+  const mainImage = product.images?.cover?.url || placeholderImage
   const galleryImages = product.images?.gallery || []
   const allImages = [product.images?.cover, ...galleryImages].filter(Boolean)
+
+  // Image component with proper error handling
+  const ProductImage = ({ src, alt, className, onError }) => {
+    const [imageSrc, setImageSrc] = useState(src)
+    const [hasErrored, setHasErrored] = useState(false)
+
+    const handleError = () => {
+      if (!hasErrored) {
+        setHasErrored(true)
+        setImageSrc(placeholderImage)
+        onError?.()
+      }
+    }
+
+    useEffect(() => {
+      setImageSrc(src)
+      setHasErrored(false)
+    }, [src])
+
+    return (
+      <img
+        src={imageSrc}
+        alt={alt}
+        className={className}
+        onError={handleError}
+      />
+    )
+  }
   
   return (
     <div className="min-h-screen bg-background">
@@ -173,13 +218,10 @@ export function ProductLandingPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Product Image */}
             <div className="bg-muted rounded-lg overflow-hidden border">
-              <img
+              <ProductImage
                 src={allImages[selectedImageIndex]?.url || mainImage}
                 alt={product.title}
                 className="w-full aspect-video object-cover"
-                onError={(e) => {
-                  e.target.src = '/placeholder-product.jpg'
-                }}
               />
             </div>
             
@@ -196,7 +238,7 @@ export function ProductLandingPage() {
                         : 'border-muted hover:border-muted-foreground'
                     }`}
                   >
-                    <img
+                    <ProductImage
                       src={image.url}
                       alt={`${product.title} ${index + 1}`}
                       className="w-full h-full object-cover"
@@ -217,7 +259,7 @@ export function ProductLandingPage() {
                   className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {product.creator.avatar && (
-                    <img
+                    <ProductImage
                       src={product.creator.avatar}
                       alt={product.creator.name}
                       className="w-5 h-5 rounded-full"

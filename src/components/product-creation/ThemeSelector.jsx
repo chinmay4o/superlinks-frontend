@@ -1,8 +1,18 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent } from '../ui/card'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Check } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../ui/dialog'
+import { Input } from '../ui/input'
+import { Label } from '../ui/label'
+import toast from 'react-hot-toast'
 
 const THEMES = [
   { 
@@ -25,7 +35,30 @@ const THEMES = [
   }
 ]
 
-export function ThemeSelector({ selectedTheme, onThemeChange }) {
+export function ThemeSelector({ selectedTheme, onThemeChange, productData, updateProductData }) {
+  const [customizeModal, setCustomizeModal] = useState(false)
+  const [customColors, setCustomColors] = useState({
+    primaryColor: productData?.customization?.primaryColor || '#6366f1',
+    backgroundColor: productData?.customization?.backgroundColor || '#ffffff',
+    textColor: productData?.customization?.textColor || '#000000'
+  })
+
+  const handleResetToDefault = () => {
+    onThemeChange('default')
+    updateProductData('customization.primaryColor', '#6366f1')
+    updateProductData('customization.backgroundColor', '#ffffff')
+    updateProductData('customization.textColor', '#000000')
+    toast.success('Theme reset to default')
+  }
+
+  const handleSaveCustomization = () => {
+    updateProductData('customization.primaryColor', customColors.primaryColor)
+    updateProductData('customization.backgroundColor', customColors.backgroundColor)
+    updateProductData('customization.textColor', customColors.textColor)
+    setCustomizeModal(false)
+    toast.success('Custom styling saved')
+  }
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -91,10 +124,83 @@ export function ThemeSelector({ selectedTheme, onThemeChange }) {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              Change
-            </Button>
-            <Button variant="ghost" size="sm">
+            <Dialog open={customizeModal} onOpenChange={setCustomizeModal}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  Change
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Customize Theme Colors</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="primaryColor">Primary Color</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="primaryColor"
+                        type="color"
+                        value={customColors.primaryColor}
+                        onChange={(e) => setCustomColors(prev => ({ ...prev, primaryColor: e.target.value }))}
+                        className="w-16 h-10 p-1"
+                      />
+                      <Input
+                        value={customColors.primaryColor}
+                        onChange={(e) => setCustomColors(prev => ({ ...prev, primaryColor: e.target.value }))}
+                        placeholder="#6366f1"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="backgroundColor">Background Color</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="backgroundColor"
+                        type="color"
+                        value={customColors.backgroundColor}
+                        onChange={(e) => setCustomColors(prev => ({ ...prev, backgroundColor: e.target.value }))}
+                        className="w-16 h-10 p-1"
+                      />
+                      <Input
+                        value={customColors.backgroundColor}
+                        onChange={(e) => setCustomColors(prev => ({ ...prev, backgroundColor: e.target.value }))}
+                        placeholder="#ffffff"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="textColor">Text Color</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="textColor"
+                        type="color"
+                        value={customColors.textColor}
+                        onChange={(e) => setCustomColors(prev => ({ ...prev, textColor: e.target.value }))}
+                        className="w-16 h-10 p-1"
+                      />
+                      <Input
+                        value={customColors.textColor}
+                        onChange={(e) => setCustomColors(prev => ({ ...prev, textColor: e.target.value }))}
+                        placeholder="#000000"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setCustomizeModal(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleSaveCustomization}>
+                      Save Changes
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Button variant="ghost" size="sm" onClick={handleResetToDefault}>
               Reset to default
             </Button>
           </div>

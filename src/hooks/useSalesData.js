@@ -133,11 +133,20 @@ export const useSalesData = (initialParams = {}) => {
   // Get purchase details
   const getPurchaseDetails = useCallback(async (purchaseId) => {
     try {
+      console.log('useSalesData.getPurchaseDetails called with:', purchaseId)
       const data = await salesService.getPurchaseDetails(purchaseId)
+      console.log('Received data from salesService:', data)
+      
+      if (!data.purchase) {
+        console.error('No purchase data in response:', data)
+        throw new Error('Invalid response: missing purchase data')
+      }
+      
+      console.log('Setting selectedPurchase to:', data.purchase)
       setSelectedPurchase(data.purchase)
       return data.purchase
     } catch (error) {
-      console.error('Error fetching purchase details:', error)
+      console.error('Error in useSalesData.getPurchaseDetails:', error)
       toast.error('Failed to load purchase details')
       throw error
     }

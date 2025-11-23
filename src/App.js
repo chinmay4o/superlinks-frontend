@@ -27,6 +27,7 @@ import { ProfileSettingsPage } from './pages/dashboard/ProfileSettingsPage'
 import { PaymentSettingsPage } from './pages/dashboard/PaymentSettingsPage'
 import { DomainSettingsPage } from './pages/dashboard/DomainSettingsPage'
 import { BioBuilderPage } from './pages/dashboard/BioBuilderPage'
+import BioBuilderPageNew from './pages/dashboard/BioBuilderPageNew'
 import { InstagramSettings } from './pages/dashboard/InstagramSettings'
 import { InstagramFunnels } from './pages/dashboard/InstagramFunnels'
 import { InstagramCallback } from './pages/dashboard/InstagramCallback'
@@ -34,10 +35,12 @@ import { InstagramCallback } from './pages/dashboard/InstagramCallback'
 // Public pages
 import { ProductLandingPage } from './pages/public/ProductLandingPage'
 import { ProductLandingPageV2 } from './pages/public/ProductLandingPageV2'
+import { ProductPreviewPage } from './pages/public/ProductPreviewPage'
 import { CheckoutPage } from './pages/public/CheckoutPage'
 import { ThankYouPage } from './pages/public/ThankYouPage'
 import { UserProfilePage } from './pages/public/UserProfilePage'
 import { PublicBioPage } from './pages/public/PublicBioPage'
+import { BioPreviewPage } from './pages/public/BioPreviewPage'
 
 // Content Viewer
 import { ContentViewer } from './components/ContentViewer'
@@ -77,6 +80,13 @@ function App() {
                   <CreateProductPageNew />
                 </PrivateRoute>
               } />
+              
+              {/* Bio Builder Routes - Full Screen */}
+              <Route path="/bio-builder" element={
+                <PrivateRoute>
+                  <BioBuilderPageNew />
+                </PrivateRoute>
+              } />
               <Route path="/dashboard/products/:id/edit" element={
                 <PrivateRoute>
                   <CreateProductPageNew />
@@ -95,7 +105,7 @@ function App() {
                 <Route path="my-purchases" element={<MyPurchasesPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="communications" element={<CommunicationsPage />} />
-                <Route path="bio" element={<BioBuilderPage />} />
+                <Route path="bio" element={<Navigate to="/bio-builder" replace />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="settings/profile" element={<ProfileSettingsPage />} />
                 <Route path="settings/payments" element={<PaymentSettingsPage />} />
@@ -107,6 +117,8 @@ function App() {
               </Route>
               
               {/* Public Routes */}
+              <Route path="/preview/:username/:slug" element={<ProductPreviewPage />} />
+              <Route path="/preview/bio/:username" element={<BioPreviewPage />} />
               <Route path="/p/:slug" element={<ProductLandingPageV2 />} />
               <Route path="/checkout/:productId" element={<CheckoutPage />} />
               <Route path="/thank-you/:purchaseId" element={<ThankYouPage />} />

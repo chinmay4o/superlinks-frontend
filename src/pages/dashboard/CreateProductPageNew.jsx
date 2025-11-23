@@ -12,10 +12,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/ta
 import { Separator } from '../../components/ui/separator'
 import { Switch } from '../../components/ui/switch'
 import { 
-  Upload, X, Plus, DollarSign, Tag, Image, FileText, Settings, 
+  Upload, X, Plus, DollarSign, Tag, Settings, 
   ArrowLeft, ArrowRight, Edit3, Eye, Smartphone, Monitor,
-  MessageCircle, HelpCircle, User, Package,
-  Link as LinkIcon, Palette, CreditCard, Shield, BarChart3
+  MessageCircle, HelpCircle, User,
+  Link as LinkIcon, Palette, CreditCard, Shield, BarChart3, Sparkles
 } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import toast from 'react-hot-toast'
@@ -34,6 +34,9 @@ import BoostSalesSettings from '../../components/product-creation/BoostSalesSett
 import PoliciesSettings from '../../components/product-creation/PoliciesSettings'
 import AdvancedFeatures from '../../components/product-creation/AdvancedFeatures'
 import LivePreview from '../../components/product-creation/LivePreview'
+import TestimonialsEditor from '../../components/product-creation/TestimonialsEditor'
+import FAQEditor from '../../components/product-creation/FAQEditor'
+import AboutMeEditor from '../../components/product-creation/AboutMeEditor'
 
 const PRODUCT_CATEGORIES = [
   { value: 'ebook', label: 'Ebook' },
@@ -66,41 +69,72 @@ export function CreateProductPageNew() {
     // Page Details
     title: '',
     description: '',
+    category: '',
     coverImage: null,
     buttonText: 'Get it now',
     
     // Optional sections
     optionalSections: {
-      gallery: false,
       testimonials: false,
       faq: false,
-      aboutMe: false,
-      showcaseProducts: false
+      aboutMe: false
+    },
+    
+    // Optional sections data
+    testimonialsData: [],
+    faqData: [],
+    aboutMeData: {
+      title: '',
+      content: '',
+      name: '',
+      role: '',
+      company: '',
+      profileImage: ''
     },
     
     // Payment Page Details
     files: [],
     resourceLinks: [],
     pricingType: 'fixed', // 'fixed' | 'customer-decides'
-    price: { amount: 100, currency: 'INR' },
+    price: { amount: 100, currency: 'INR', minAmount: null },
     offerDiscount: false,
     discountPrice: null,
     limitQuantity: false,
     quantityLimit: null,
     
     // Advanced Settings
-    theme: 'default',
+    themeStyle: 'default',
+    customization: {
+      primaryColor: '#6366f1',
+      backgroundColor: '#ffffff',
+      textColor: '#000000'
+    },
     checkoutExperience: 'next-page',
     customerInfo: {
+      collectName: true,
+      nameRequired: true,
       emailVerification: true,
-      phoneNumber: false,
+      collectPhoneNumber: false,
       phoneVerification: false,
       additionalQuestions: []
     },
     boostSales: {
       bumpOffer: false,
+      bumpOfferData: {
+        title: '',
+        description: '',
+        price: { amount: 50, currency: 'INR' },
+        originalPrice: { amount: 100, currency: 'INR' },
+        files: []
+      },
       automatedEmail: false,
-      discountCoupons: false
+      emailData: {
+        subject: '',
+        template: '',
+        delayMinutes: 0
+      },
+      discountCoupons: false,
+      discountCouponsData: []
     },
     policies: {
       termsConditions: '',
@@ -123,7 +157,12 @@ export function CreateProductPageNew() {
       let current = newData
       
       for (let i = 0; i < pathArray.length - 1; i++) {
-        current = current[pathArray[i]]
+        const key = pathArray[i]
+        // Create nested object if it doesn't exist
+        if (!current[key] || typeof current[key] !== 'object') {
+          current[key] = {}
+        }
+        current = current[key]
       }
       
       current[pathArray[pathArray.length - 1]] = value
@@ -142,11 +181,73 @@ export function CreateProductPageNew() {
     try {
       setLoading(true)
       const response = await productService.getProduct(id)
-      // Map response data to our new structure
-      setProductData(prev => ({
-        ...prev,
-        ...response.product
-      }))
+      const backendData = response.product
+      
+      // Transform backend data structure to match frontend expectations
+      const frontendData = {
+        ...backendData,
+        // Transform optional sections back to frontend format
+        testimonialsData: backendData.optionalSections?.testimonialsData || [],
+        faqData: backendData.optionalSections?.faqData || [],
+        aboutMeData: backendData.optionalSections?.aboutMeData || {
+          title: '',
+          content: '',
+          name: '',
+          role: '',
+          company: '',
+          profileImage: ''
+        },
+        // Transform boost sales back to frontend format
+        boostSales: {
+          bumpOffer: backendData.bumpOffer?.enabled || false,
+          bumpOfferData: {
+            title: backendData.bumpOffer?.title || '',
+            description: backendData.bumpOffer?.description || '',
+            price: { 
+              amount: backendData.bumpOffer?.price || 50, 
+              currency: backendData.price?.currency || 'INR' 
+            },
+            originalPrice: { 
+              amount: backendData.bumpOffer?.originalPrice || 100, 
+              currency: backendData.price?.currency || 'INR' 
+            },
+            files: backendData.bumpOffer?.files || []
+          },
+          automatedEmail: backendData.emailAutomation?.enabled || false,
+          automatedEmailData: {
+            subject: backendData.emailAutomation?.subject || '',
+            content: backendData.emailAutomation?.content || '',
+            triggerEvent: backendData.emailAutomation?.triggerEvent || 'purchase'
+          },
+          discountCoupons: (backendData.enhancedCoupons && backendData.enhancedCoupons.length > 0) || false,
+          discountCouponsData: backendData.enhancedCoupons || []
+        },
+        // Transform pricing back to frontend format
+        pricingType: backendData.pricing?.type === 'pay-what-you-want' ? 'customer-decides' : 'fixed',
+        price: {
+          ...backendData.price,
+          minAmount: backendData.pricing?.minAmount || null
+        },
+        // Transform advanced fields back to frontend format
+        customUrl: backendData.advanced?.customUrl || '',
+        postPurchaseBehavior: backendData.advanced?.postPurchaseBehavior || 'download',
+        customRedirectUrl: backendData.advanced?.customRedirectUrl || '',
+        // Handle theme mapping - support both old 'theme' and new 'themeStyle' format
+        themeStyle: backendData.themeStyle || backendData.theme || backendData.advanced?.themeStyle || 'default',
+        // Ensure customization exists
+        customization: backendData.customization || {
+          primaryColor: '#6366f1',
+          backgroundColor: '#ffffff',
+          textColor: '#000000'
+        },
+        // Ensure tracking exists
+        tracking: backendData.tracking || {
+          metaPixel: '',
+          googleAnalytics: ''
+        }
+      }
+      
+      setProductData(frontendData)
     } catch (error) {
       toast.error('Failed to load product data')
       console.error('Error loading product:', error)
@@ -155,16 +256,199 @@ export function CreateProductPageNew() {
     }
   }
 
-  const handleSave = async () => {
+  const handleSave = async (isDraft = false) => {
     try {
       setSaving(true)
       
+      // Validate required fields if not a draft
+      if (!isDraft) {
+        const requiredFields = {
+          title: productData.title?.trim(),
+          description: productData.description?.trim(),
+          category: productData.category
+        }
+        
+        const missingFields = Object.entries(requiredFields)
+          .filter(([key, value]) => !value)
+          .map(([key]) => key)
+        
+        if (missingFields.length > 0) {
+          toast.error(`Please fill in required fields: ${missingFields.join(', ')}`)
+          setSaving(false)
+          return
+        }
+
+        // Validate category is in allowed enum values
+        const allowedCategories = ['ebook', 'course', 'template', 'art', 'toolkit', 'audio', 'software', 'other']
+        if (!allowedCategories.includes(productData.category)) {
+          toast.error('Please select a valid category')
+          setSaving(false)
+          return
+        }
+
+        // Validate price is a valid number
+        if (productData.price?.amount !== undefined && (isNaN(productData.price.amount) || productData.price.amount < 0)) {
+          toast.error('Price must be a valid positive number')
+          setSaving(false)
+          return
+        }
+
+        // Validate bump offer if enabled
+        if (productData.boostSales?.bumpOffer) {
+          const bumpOfferData = productData.boostSales.bumpOfferData
+          if (!bumpOfferData?.title?.trim() || !bumpOfferData?.description?.trim()) {
+            toast.error('Bump offer requires title and description when enabled')
+            setSaving(false)
+            return
+          }
+          if (isNaN(bumpOfferData?.price?.amount) || bumpOfferData?.price?.amount < 0) {
+            toast.error('Bump offer price must be a valid positive number')
+            setSaving(false)
+            return
+          }
+        }
+
+        // Validate email automation if enabled
+        if (productData.boostSales?.automatedEmail) {
+          const emailData = productData.boostSales.emailData
+          if (!emailData?.subject?.trim() || !emailData?.template?.trim()) {
+            toast.error('Email automation requires subject and content when enabled')
+            setSaving(false)
+            return
+          }
+        }
+      }
+      
+      // Ensure files have proper structure with all required fields
+      // Upload cover image if it's a new file
+      let validCoverImage = null
+      if (productData.coverImage) {
+        if (productData.coverImage.file && !productData.coverImage.key) {
+          // Upload new image to AWS
+          try {
+            const uploadService = await import('../../services/uploadService')
+            const uploadResult = await uploadService.default.uploadFile(productData.coverImage.file, 'images')
+            validCoverImage = {
+              url: uploadResult.fileUrl,
+              key: uploadResult.fileKey,
+              alt: productData.title || '',
+              name: productData.coverImage.name,
+              size: productData.coverImage.size
+            }
+          } catch (uploadError) {
+            console.error('Failed to upload cover image:', uploadError)
+            toast.error('Failed to upload cover image')
+            setSaving(false)
+            return
+          }
+        } else if (productData.coverImage.key && productData.coverImage.url) {
+          // Existing uploaded image
+          validCoverImage = productData.coverImage
+        }
+      }
+      
+      const validFiles = (productData.files || []).filter(file => 
+        file.key && file.url && file.name && file.size !== undefined && file.type
+      )
+      const validResourceLinks = (productData.resourceLinks || []).filter(link => link.url && link.title)
+      
+      // Helper function to strip HTML tags from text
+      const stripHtmlTags = (html) => {
+        if (!html) return ''
+        // Create a temporary div element to parse HTML
+        const tmp = document.createElement('div')
+        tmp.innerHTML = html
+        return tmp.textContent || tmp.innerText || ''
+      }
+      
+      // Transform frontend data structure to match backend expectations
+      const transformedData = {
+        ...productData,
+        // Clean the description to remove HTML tags
+        description: stripHtmlTags(productData.description || ''),
+        // Ensure proper file structure
+        files: validFiles,
+        images: {
+          cover: validCoverImage ? {
+            url: validCoverImage.url,
+            key: validCoverImage.key,
+            alt: validCoverImage.alt || productData.title || ''
+          } : null,
+          gallery: []
+        },
+        resourceLinks: validResourceLinks,
+        // Set draft status
+        isDraft: isDraft,
+        // Transform optional sections
+        optionalSections: {
+          testimonialsData: productData.testimonialsData || [],
+          faqData: productData.faqData || [],
+          aboutMeData: productData.aboutMeData || {}
+        },
+        // Transform boost sales to backend format
+        bumpOffer: {
+          enabled: productData.boostSales?.bumpOffer || false,
+          title: productData.boostSales?.bumpOfferData?.title || '',
+          description: productData.boostSales?.bumpOfferData?.description || '',
+          price: parseFloat(productData.boostSales?.bumpOfferData?.price?.amount) || 0,
+          originalPrice: parseFloat(productData.boostSales?.bumpOfferData?.originalPrice?.amount) || 0,
+          files: productData.boostSales?.bumpOfferData?.files || []
+        },
+        emailAutomation: {
+          enabled: productData.boostSales?.automatedEmail || false,
+          subject: productData.boostSales?.emailData?.subject || '',
+          content: productData.boostSales?.emailData?.template || '',
+          delay: parseInt(productData.boostSales?.emailData?.delayMinutes) || 0
+        },
+        enhancedCoupons: productData.boostSales?.discountCouponsData || [],
+        // Transform pricing type from frontend to backend format
+        pricing: {
+          type: productData.pricingType === 'customer-decides' ? 'pay-what-you-want' : 'one-time',
+          minAmount: productData.price?.minAmount || 0
+        },
+        // Transform tracking and advanced sections
+        tracking: productData.tracking || {},
+        advanced: {
+          customUrl: productData.customUrl || '',
+          postPurchaseBehavior: productData.postPurchaseBehavior || 'download',
+          customRedirectUrl: productData.customRedirectUrl || '',
+          themeStyle: productData.themeStyle || 'default'
+        }
+      }
+      
+      // Remove frontend-specific fields that don't exist in backend
+      delete transformedData.testimonialsData
+      delete transformedData.faqData  
+      delete transformedData.aboutMeData
+      delete transformedData.boostSales
+      delete transformedData.pricingType
+      delete transformedData.customUrl
+      delete transformedData.postPurchaseBehavior
+      delete transformedData.customRedirectUrl
+      delete transformedData.themeStyle // Now mapped to advanced.themeStyle
+      delete transformedData.coverImage // Now mapped to images.cover
+      
+      // Clean up any undefined or empty values
+      Object.keys(transformedData).forEach(key => {
+        if (transformedData[key] === undefined || transformedData[key] === null) {
+          delete transformedData[key]
+        }
+      })
+      
       if (isEditing) {
-        await productService.updateProduct(id, productData)
-        toast.success('Product updated successfully!')
+        await productService.updateProduct(id, transformedData)
+        if (isDraft) {
+          toast.success('Product saved as draft!')
+        } else {
+          toast.success('Product updated and published!')
+        }
       } else {
-        const response = await productService.createProduct(productData)
-        toast.success('Product created successfully!')
+        const response = await productService.createProduct(transformedData)
+        if (isDraft) {
+          toast.success('Product saved as draft!')
+        } else {
+          toast.success('Product created and published!')
+        }
         navigate(`/dashboard/products/${response.product._id}/edit`)
       }
     } catch (error) {
@@ -187,7 +471,7 @@ export function CreateProductPageNew() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background product-creation-page">
       {/* Full Screen Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="px-6 flex h-16 items-center justify-between">
@@ -207,21 +491,16 @@ export function CreateProductPageNew() {
           </div>
           
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" disabled={saving}>
-              Save Draft
-            </Button>
-            <Button onClick={handleSave} disabled={saving} size="sm">
-              {saving ? 'Saving...' : 'Save Changes'}
-            </Button>
+            {/* Buttons moved to left sidebar bottom */}
           </div>
         </div>
       </header>
 
-      {/* Full Screen Main Content - 50/50 Split */}
+      {/* Full Screen Main Content - 40/60 Split */}
       <div className="h-[calc(100vh-64px)] flex">
-        {/* Left Panel - Form Content (50%) */}
-        <div className="w-1/2 overflow-y-auto bg-background">
-          <div className="p-6">
+        {/* Left Panel - Form Content (40%) */}
+        <div className="w-2/5 bg-background flex flex-col">
+          <div className="flex-1 overflow-y-auto p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="page-details" className="flex items-center gap-2">
@@ -262,10 +541,50 @@ export function CreateProductPageNew() {
               </div>
             </Tabs>
           </div>
+          
+          {/* Fixed Save Buttons at Bottom */}
+          <div className="border-t bg-background p-3 relative overflow-hidden">
+            {/* Subtle grid background */}
+            <div 
+              className="absolute inset-0 opacity-20"
+              style={{
+                backgroundImage: `radial-gradient(circle at 1px 1px, rgb(0 0 0 / 0.3) 1px, transparent 0)`,
+                backgroundSize: '16px 16px'
+              }}
+            />
+            
+            <div className="flex items-center gap-3 justify-center relative z-10">
+              <Button 
+                variant="outline" 
+                disabled={saving} 
+                onClick={() => handleSave(true)}
+                className="h-11 w-[40%] relative group overflow-hidden border-2 hover:border-primary/50 transition-all duration-300"
+              >
+                {/* Subtle glow on hover */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                
+                <span className="relative z-10">{saving ? 'Saving...' : 'Save Draft'}</span>
+              </Button>
+              
+              <Button 
+                onClick={() => handleSave(false)} 
+                disabled={saving}
+                className="h-11 w-[40%] relative group overflow-hidden bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                {/* Premium shimmer effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform -skew-x-12 group-hover:translate-x-full group-hover:duration-700" />
+                
+                <span className="relative z-10 font-medium flex items-center gap-2">
+                  {saving ? 'Saving...' : 'Publish Product'}
+                  {!saving && <Sparkles className="h-4 w-4 text-yellow-300 opacity-80 group-hover:opacity-100 group-hover:animate-pulse transition-all duration-300" />}
+                </span>
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {/* Right Panel - Live Preview (50%) */}
-        <div className="w-1/2 border-l bg-gray-50">
+        {/* Right Panel - Live Preview (60%) */}
+        <div className="w-3/5 border-l bg-gray-50">
           <div className="h-full flex flex-col">
             {/* Preview Header */}
             <div className="p-6 border-b bg-background">
@@ -291,7 +610,15 @@ export function CreateProductPageNew() {
             </div>
 
             {/* Preview Content */}
-            <div className="flex-1 p-6 overflow-y-auto">
+            <div className="flex-1 p-0 overflow-y-auto relative">
+              {/* Grid background */}
+              <div 
+                className="absolute inset-0 opacity-30 pointer-events-none"
+                style={{
+                  backgroundImage: `radial-gradient(circle at 1px 1px, rgb(0 0 0 / 0.6) 1px, transparent 0)`,
+                  backgroundSize: '16px 16px'
+                }}
+              />
               <LivePreview 
                 productData={productData} 
                 previewMode={previewMode}
@@ -326,7 +653,7 @@ function PageDetailsTab({ productData, updateProductData }) {
                 maxLength={75}
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                {productData.title.length}/75
+                {(productData.title || '').length}/75
               </span>
             </div>
           </div>
@@ -338,6 +665,29 @@ function PageDetailsTab({ productData, updateProductData }) {
               image={productData.coverImage}
               onImageChange={(image) => updateProductData('coverImage', image)}
             />
+          </div>
+
+          {/* Category */}
+          <div className="space-y-2">
+            <Label htmlFor="category">Category *</Label>
+            <Select 
+              value={productData.category} 
+              onValueChange={(value) => updateProductData('category', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ebook">Ebook</SelectItem>
+                <SelectItem value="course">Video Course</SelectItem>
+                <SelectItem value="template">Template</SelectItem>
+                <SelectItem value="art">Digital Art</SelectItem>
+                <SelectItem value="toolkit">PDF / Docs / Toolkit</SelectItem>
+                <SelectItem value="audio">Audio</SelectItem>
+                <SelectItem value="software">Software</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Description */}
@@ -362,7 +712,7 @@ function PageDetailsTab({ productData, updateProductData }) {
                 maxLength={25}
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                {productData.buttonText.length}/25
+                {(productData.buttonText || '').length}/25
               </span>
             </div>
           </div>
@@ -376,12 +726,6 @@ function PageDetailsTab({ productData, updateProductData }) {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
-            <OptionalSectionCard
-              icon={Image}
-              title="Gallery"
-              enabled={productData.optionalSections.gallery}
-              onToggle={(enabled) => updateProductData('optionalSections.gallery', enabled)}
-            />
             <OptionalSectionCard
               icon={MessageCircle}
               title="Testimonials"
@@ -399,17 +743,56 @@ function PageDetailsTab({ productData, updateProductData }) {
               title="About Me"
               enabled={productData.optionalSections.aboutMe}
               onToggle={(enabled) => updateProductData('optionalSections.aboutMe', enabled)}
-            />
-            <OptionalSectionCard
-              icon={Package}
-              title="Showcase Products"
-              enabled={productData.optionalSections.showcaseProducts}
-              onToggle={(enabled) => updateProductData('optionalSections.showcaseProducts', enabled)}
               className="col-span-2"
             />
           </div>
         </CardContent>
       </Card>
+
+      {/* Testimonials Editor */}
+      {productData.optionalSections.testimonials && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Manage Testimonials</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TestimonialsEditor
+              testimonials={productData.testimonialsData}
+              onChange={(testimonials) => updateProductData('testimonialsData', testimonials)}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* FAQ Editor */}
+      {productData.optionalSections.faq && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Manage FAQ</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FAQEditor
+              faqs={productData.faqData}
+              onChange={(faqs) => updateProductData('faqData', faqs)}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* About Me Editor */}
+      {productData.optionalSections.aboutMe && (
+        <Card>
+          <CardHeader>
+            <CardTitle>About Me Section</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AboutMeEditor
+              aboutMeData={productData.aboutMeData}
+              onChange={(aboutMeData) => updateProductData('aboutMeData', aboutMeData)}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
@@ -460,8 +843,10 @@ function AdvancedSettingsTab({ productData, updateProductData }) {
         </CardHeader>
         <CardContent>
           <ThemeSelector 
-            selectedTheme={productData.theme}
-            onThemeChange={(theme) => updateProductData('theme', theme)}
+            selectedTheme={productData.themeStyle}
+            onThemeChange={(themeStyle) => updateProductData('themeStyle', themeStyle)}
+            productData={productData}
+            updateProductData={updateProductData}
           />
         </CardContent>
       </Card>

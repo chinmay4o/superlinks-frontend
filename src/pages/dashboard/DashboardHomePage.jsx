@@ -472,48 +472,54 @@ export function DashboardHomePage() {
       </div>
 
       {/* Quick Actions */}
-      <Card className={`border-0 bg-gradient-to-r ${dashboardColors.quickActions.gradient}`}>
+      <Card className={`border-0 bg-gradient-to-r ${dashboardColors.quickActions.gradient} w-full`}>
         <CardHeader>
           <CardTitle className={dashboardColors.quickActions.title}>Quick Actions</CardTitle>
           <CardDescription>Get started with these common tasks</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <Button variant="outline" className={`h-auto p-4 flex-col space-y-2 ${dashboardColors.quickActions.createProduct.border} transition-all duration-200`} asChild>
-              <Link to="/dashboard/products/new">
-                <div className={`h-10 w-10 rounded-full ${dashboardColors.quickActions.createProduct.icon} flex items-center justify-center mb-2`}>
-                  <Package className="h-5 w-5 text-white" />
-                </div>
-                <div className="text-center">
-                  <div className={`font-medium ${dashboardColors.quickActions.createProduct.text}`}>Create Your First Product</div>
-                  <div className={`text-xs ${dashboardColors.quickActions.createProduct.subtext}`}>Upload and sell digital products</div>
-                </div>
-              </Link>
-            </Button>
+        <CardContent className="w-full">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
+            <div className="w-full">
+              <Button variant="outline" className={`h-auto p-6 flex-col space-y-3 w-full min-h-[140px] ${dashboardColors.quickActions.createProduct.border} hover:scale-105 transition-all duration-200 shadow-sm hover:shadow-md`} asChild>
+                <Link to="/dashboard/products/new" className="w-full">
+                  <div className={`h-12 w-12 rounded-full ${dashboardColors.quickActions.createProduct.icon} flex items-center justify-center mb-3 shadow-lg`}>
+                    <Package className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-center w-full">
+                    <div className={`font-semibold text-base mb-1 ${dashboardColors.quickActions.createProduct.text}`}>Create Your First Product</div>
+                    <div className={`text-sm leading-relaxed ${dashboardColors.quickActions.createProduct.subtext}`}>Upload and sell digital products</div>
+                  </div>
+                </Link>
+              </Button>
+            </div>
             
-            <Button variant="outline" className={`h-auto p-4 flex-col space-y-2 ${dashboardColors.quickActions.profile.border} transition-all duration-200`} asChild>
-              <Link to="/dashboard/settings/profile">
-                <div className={`h-10 w-10 rounded-full ${dashboardColors.quickActions.profile.icon} flex items-center justify-center mb-2`}>
-                  <Users className="h-5 w-5 text-white" />
-                </div>
-                <div className="text-center">
-                  <div className={`font-medium ${dashboardColors.quickActions.profile.text}`}>Customize Your Profile</div>
-                  <div className={`text-xs ${dashboardColors.quickActions.profile.subtext}`}>Set up your creator profile</div>
-                </div>
-              </Link>
-            </Button>
+            <div className="w-full">
+              <Button variant="outline" className={`h-auto p-6 flex-col space-y-3 w-full min-h-[140px] ${dashboardColors.quickActions.profile.border} hover:scale-105 transition-all duration-200 shadow-sm hover:shadow-md`} asChild>
+                <Link to="/dashboard/settings/profile" className="w-full">
+                  <div className={`h-12 w-12 rounded-full ${dashboardColors.quickActions.profile.icon} flex items-center justify-center mb-3 shadow-lg`}>
+                    <Users className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-center w-full">
+                    <div className={`font-semibold text-base mb-1 ${dashboardColors.quickActions.profile.text}`}>Customize Your Profile</div>
+                    <div className={`text-sm leading-relaxed ${dashboardColors.quickActions.profile.subtext}`}>Set up your creator profile</div>
+                  </div>
+                </Link>
+              </Button>
+            </div>
             
-            <Button variant="outline" className={`h-auto p-4 flex-col space-y-2 ${dashboardColors.quickActions.payments.border} transition-all duration-200`} asChild>
-              <Link to="/dashboard/settings/payments">
-                <div className={`h-10 w-10 rounded-full ${dashboardColors.quickActions.payments.icon} flex items-center justify-center mb-2`}>
-                  <DollarSign className="h-5 w-5 text-white" />
-                </div>
-                <div className="text-center">
-                  <div className={`font-medium ${dashboardColors.quickActions.payments.text}`}>Setup Payments</div>
-                  <div className={`text-xs ${dashboardColors.quickActions.payments.subtext}`}>Configure your payment methods</div>
-                </div>
-              </Link>
-            </Button>
+            <div className="w-full">
+              <Button variant="outline" className={`h-auto p-6 flex-col space-y-3 w-full min-h-[140px] ${dashboardColors.quickActions.payments.border} hover:scale-105 transition-all duration-200 shadow-sm hover:shadow-md`} asChild>
+                <Link to="/dashboard/settings/payments" className="w-full">
+                  <div className={`h-12 w-12 rounded-full ${dashboardColors.quickActions.payments.icon} flex items-center justify-center mb-3 shadow-lg`}>
+                    <DollarSign className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-center w-full">
+                    <div className={`font-semibold text-base mb-1 ${dashboardColors.quickActions.payments.text}`}>Setup Payments</div>
+                    <div className={`text-sm leading-relaxed ${dashboardColors.quickActions.payments.subtext}`}>Configure your payment methods</div>
+                  </div>
+                </Link>
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

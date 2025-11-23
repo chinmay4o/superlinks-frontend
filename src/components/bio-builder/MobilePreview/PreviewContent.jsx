@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, memo } from 'react'
 import { motion } from 'framer-motion'
 import { 
   Instagram, Twitter, Youtube, Linkedin, Facebook, Globe, Mail,
@@ -15,7 +15,7 @@ const SOCIAL_ICONS = {
   email: Mail
 }
 
-export default function PreviewContent({ blocks, theme, username }) {
+function PreviewContent({ blocks, theme, username }) {
   // Ensure we have safe defaults
   const safeBlocks = blocks || []
   const safeTheme = {
@@ -109,40 +109,40 @@ export default function PreviewContent({ blocks, theme, username }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: animationDelay }}
             className="header-block"
-            style={{ textAlign: 'center', padding: '2rem 1rem' }}
+            style={{ textAlign: 'center', padding: '1rem 0.5rem' }}
           >
             {block.content.avatar && (
               <img
                 src={block.content.avatar}
                 alt="Avatar"
                 style={{
-                  width: '96px',
-                  height: '96px',
+                  width: '48px',
+                  height: '48px',
                   borderRadius: safeTheme.avatarShape === 'square' ? '12px' : '50%',
                   objectFit: 'cover',
-                  margin: '0 auto 1rem',
-                  border: '4px solid white',
+                  margin: '0 auto 0.5rem',
+                  border: '2px solid white',
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                 }}
               />
             )}
             {block.content.title && (
               <h1 style={{ 
-                fontSize: '24px', 
+                fontSize: '14px', 
                 fontWeight: '700',
                 marginBottom: '0.5rem',
-                color: theme.textColor 
+                color: safeTheme.textColor 
               }}>
                 {block.content.title}
               </h1>
             )}
             {block.content.description && (
               <p style={{ 
-                fontSize: '16px',
+                fontSize: '10px',
                 color: safeTheme.textColor,
                 opacity: 0.8,
                 lineHeight: '1.5',
-                maxWidth: '300px',
+                maxWidth: '180px',
                 margin: '0 auto'
               }}>
                 {block.content.description}
@@ -150,10 +150,10 @@ export default function PreviewContent({ blocks, theme, username }) {
             )}
             {block.content.location && (
               <p style={{
-                fontSize: '14px',
+                fontSize: '9px',
                 color: safeTheme.textColor,
                 opacity: 0.6,
-                marginTop: '0.5rem'
+                marginTop: '0.25rem'
               }}>
                 📍 {block.content.location}
               </p>
@@ -170,15 +170,15 @@ export default function PreviewContent({ blocks, theme, username }) {
             transition={{ delay: animationDelay }}
             className="text-block"
             style={{
-              padding: '1rem',
+              padding: '0.5rem',
               textAlign: block.content.alignment || 'center'
             }}
           >
             <p style={{
-              fontSize: block.content.fontSize === 'large' ? '18px' : 
-                       block.content.fontSize === 'small' ? '14px' : '16px',
+              fontSize: block.content.fontSize === 'large' ? '10px' : 
+                       block.content.fontSize === 'small' ? '8px' : '9px',
               color: theme.textColor,
-              lineHeight: '1.6'
+              lineHeight: '1.4'
             }}>
               {block.content.text}
             </p>
@@ -193,7 +193,7 @@ export default function PreviewContent({ blocks, theme, username }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: animationDelay }}
             className="links-block"
-            style={{ padding: '0 1rem' }}
+            style={{ padding: '0 0.5rem' }}
           >
             {(block.content.links || []).map((link, linkIndex) => (
               <motion.a
@@ -208,12 +208,12 @@ export default function PreviewContent({ blocks, theme, username }) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '1rem',
-                  marginBottom: '0.75rem',
+                  padding: '0.5rem',
+                  marginBottom: '0.4rem',
                   backgroundColor: 'transparent',
                   border: `1px solid ${safeTheme.primaryColor}`,
                   borderRadius: safeTheme.buttonStyle === 'pill' ? '9999px' : 
-                               safeTheme.buttonStyle === 'square' ? '0' : '8px',
+                               safeTheme.buttonStyle === 'square' ? '0' : '4px',
                   color: safeTheme.textColor,
                   textDecoration: 'none',
                   transition: 'all 0.2s',
@@ -228,8 +228,8 @@ export default function PreviewContent({ blocks, theme, username }) {
                   e.currentTarget.style.backgroundColor = 'transparent'
                 }}
               >
-                <span style={{ fontWeight: '500' }}>{link.title}</span>
-                <ExternalLink size={16} style={{ opacity: 0.5 }} />
+                <span style={{ fontWeight: '500', fontSize: '10px' }}>{link.title}</span>
+                <ExternalLink size={10} style={{ opacity: 0.5 }} />
               </motion.a>
             ))}
           </motion.div>
@@ -246,8 +246,8 @@ export default function PreviewContent({ blocks, theme, username }) {
             style={{
               display: 'flex',
               justifyContent: 'center',
-              gap: '1rem',
-              padding: '1rem'
+              gap: '0.5rem',
+              padding: '0.5rem'
             }}
           >
             {Object.entries(block.content.links || {}).map(([platform, url]) => {
@@ -267,8 +267,8 @@ export default function PreviewContent({ blocks, theme, username }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    width: '48px',
-                    height: '48px',
+                    width: '28px',
+                    height: '28px',
                     borderRadius: '50%',
                     border: `1px solid ${safeTheme.primaryColor}`,
                     color: theme.primaryColor,
@@ -284,7 +284,7 @@ export default function PreviewContent({ blocks, theme, username }) {
                     e.currentTarget.style.color = theme.primaryColor
                   }}
                 >
-                  <Icon size={20} />
+                  <Icon size={12} />
                 </motion.a>
               )
             })}
@@ -299,19 +299,19 @@ export default function PreviewContent({ blocks, theme, username }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: animationDelay }}
             className="youtube-block"
-            style={{ padding: '1rem' }}
+            style={{ padding: '0.5rem' }}
           >
             {(!block.content.videos || block.content.videos.length === 0) ? (
               <div style={{
-                padding: '2rem',
+                padding: '1rem',
                 textAlign: 'center',
                 border: '2px dashed #e5e7eb',
-                borderRadius: '12px',
+                borderRadius: '6px',
                 color: '#6b7280'
               }}>
-                <Youtube size={32} style={{ margin: '0 auto 1rem' }} />
-                <p style={{ fontSize: '14px' }}>No videos added yet</p>
-                <p style={{ fontSize: '12px', opacity: 0.7 }}>Add videos in the properties panel</p>
+                <Youtube size={16} style={{ margin: '0 auto 0.5rem' }} />
+                <p style={{ fontSize: '9px' }}>No videos added yet</p>
+                <p style={{ fontSize: '8px', opacity: 0.7 }}>Add videos in the properties panel</p>
               </div>
             ) : (
               (block.content.videos || []).map((video, videoIndex) => {
@@ -322,8 +322,8 @@ export default function PreviewContent({ blocks, theme, username }) {
                     key={videoIndex}
                     style={{
                       position: 'relative',
-                      marginBottom: '1rem',
-                      borderRadius: '12px',
+                      marginBottom: '0.5rem',
+                      borderRadius: '6px',
                       overflow: 'hidden',
                       backgroundColor: '#000',
                       aspectRatio: '16/9'
@@ -352,8 +352,8 @@ export default function PreviewContent({ blocks, theme, username }) {
                       transition: 'background-color 0.2s'
                     }}>
                       <div style={{
-                        width: '64px',
-                        height: '64px',
+                        width: '32px',
+                        height: '32px',
                         borderRadius: '50%',
                         backgroundColor: '#ff0000',
                         display: 'flex',
@@ -365,7 +365,7 @@ export default function PreviewContent({ blocks, theme, username }) {
                       onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
                       onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                       >
-                        <Play size={24} color="white" fill="white" style={{ marginLeft: '4px' }} />
+                        <Play size={12} color="white" fill="white" style={{ marginLeft: '2px' }} />
                       </div>
                     </div>
                     {video.title && (
@@ -374,12 +374,12 @@ export default function PreviewContent({ blocks, theme, username }) {
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        padding: '1rem',
+                        padding: '0.5rem',
                         background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)'
                       }}>
                         <h3 style={{ 
                           color: 'white', 
-                          fontSize: '14px', 
+                          fontSize: '9px', 
                           fontWeight: '600',
                           margin: 0,
                           textShadow: '0 1px 2px rgba(0,0,0,0.8)'
@@ -477,13 +477,13 @@ export default function PreviewContent({ blocks, theme, username }) {
           return (
             <div style={{
               backgroundColor: 'rgba(0, 0, 0, 0.02)',
-              borderRadius: '12px',
-              padding: '1.5rem',
+              borderRadius: '6px',
+              padding: '0.75rem',
               border: '1px solid rgba(0, 0, 0, 0.1)'
             }}>
               <h3 style={{
-                margin: '0 0 1rem 0',
-                fontSize: '18px',
+                margin: '0 0 0.5rem 0',
+                fontSize: '12px',
                 fontWeight: '600',
                 color: safeTheme.textColor,
                 textAlign: 'center'
@@ -493,8 +493,8 @@ export default function PreviewContent({ blocks, theme, username }) {
               
               {block.content.description && (
                 <p style={{
-                  margin: '0 0 1.5rem 0',
-                  fontSize: '14px',
+                  margin: '0 0 0.75rem 0',
+                  fontSize: '9px',
                   color: safeTheme.textColor,
                   opacity: 0.8,
                   textAlign: 'center'
@@ -505,14 +505,14 @@ export default function PreviewContent({ blocks, theme, username }) {
               
               {submitStatus === 'success' && (
                 <div style={{
-                  padding: '1rem',
+                  padding: '0.5rem',
                   backgroundColor: '#dcfce7',
                   border: '1px solid #16a34a',
-                  borderRadius: '8px',
-                  marginBottom: '1rem',
+                  borderRadius: '4px',
+                  marginBottom: '0.5rem',
                   textAlign: 'center'
                 }}>
-                  <p style={{ margin: 0, color: '#166534', fontSize: '14px', fontWeight: '500' }}>
+                  <p style={{ margin: 0, color: '#166534', fontSize: '9px', fontWeight: '500' }}>
                     ✅ Message sent successfully! We'll get back to you soon.
                   </p>
                 </div>
@@ -520,21 +520,21 @@ export default function PreviewContent({ blocks, theme, username }) {
               
               {submitStatus === 'error' && (
                 <div style={{
-                  padding: '1rem',
+                  padding: '0.5rem',
                   backgroundColor: '#fef2f2',
                   border: '1px solid #dc2626',
-                  borderRadius: '8px',
-                  marginBottom: '1rem',
+                  borderRadius: '4px',
+                  marginBottom: '0.5rem',
                   textAlign: 'center'
                 }}>
-                  <p style={{ margin: 0, color: '#991b1b', fontSize: '14px', fontWeight: '500' }}>
+                  <p style={{ margin: 0, color: '#991b1b', fontSize: '9px', fontWeight: '500' }}>
                     ❌ {errorMessage}
                   </p>
                 </div>
               )}
               
               <form 
-                style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}
                 onSubmit={handleSubmit}
               >
                 {(block.content.fields || ['name', 'email', 'message']).map((field) => {
@@ -550,15 +550,15 @@ export default function PreviewContent({ blocks, theme, username }) {
                     onChange: (e) => handleInputChange(field, e.target.value),
                     disabled: isSubmitting,
                     style: {
-                      padding: '0.75rem',
+                      padding: '0.4rem',
                       border: `1px solid ${theme.primaryColor}40`,
-                      borderRadius: '8px',
-                      fontSize: '14px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
                       backgroundColor: isSubmitting ? '#f9fafb' : 'white',
                       color: safeTheme.textColor,
                       fontFamily: 'inherit',
                       resize: isTextarea ? 'vertical' : undefined,
-                      minHeight: isTextarea ? '100px' : undefined,
+                      minHeight: isTextarea ? '60px' : undefined,
                       transition: 'border-color 0.2s',
                       opacity: isSubmitting ? 0.7 : 1
                     },
@@ -577,16 +577,16 @@ export default function PreviewContent({ blocks, theme, username }) {
                   type="submit"
                   disabled={isSubmitting}
                   style={{
-                    padding: '0.75rem 1.5rem',
+                    padding: '0.4rem 0.8rem',
                     backgroundColor: isSubmitting ? '#9ca3af' : theme.primaryColor,
                     color: 'white',
                     border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '14px',
+                    borderRadius: '4px',
+                    fontSize: '10px',
                     fontWeight: '600',
                     cursor: isSubmitting ? 'not-allowed' : 'pointer',
                     transition: 'all 0.2s',
-                    marginTop: '0.5rem'
+                    marginTop: '0.25rem'
                   }}
                   onMouseEnter={(e) => {
                     if (!isSubmitting) {
@@ -629,39 +629,39 @@ export default function PreviewContent({ blocks, theme, username }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: animationDelay }}
             className="support-block"
-            style={{ padding: '1rem' }}
+            style={{ padding: '0.5rem' }}
           >
             <div style={{
               textAlign: 'center',
-              padding: '1.5rem',
+              padding: '0.75rem',
               backgroundColor: 'rgba(0, 0, 0, 0.02)',
-              borderRadius: '12px',
+              borderRadius: '6px',
               border: '1px solid rgba(0, 0, 0, 0.1)'
             }}>
-              <Heart size={32} style={{ color: '#ef4444', margin: '0 auto 1rem' }} />
+              <Heart size={16} style={{ color: '#ef4444', margin: '0 auto 0.5rem' }} />
               <h3 style={{
-                fontSize: '18px',
+                fontSize: '12px',
                 fontWeight: '600',
-                margin: '0 0 0.5rem 0',
+                margin: '0 0 0.25rem 0',
                 color: theme.textColor
               }}>
                 {block.content.title || 'Support Me'}
               </h3>
               <p style={{
-                fontSize: '14px',
+                fontSize: '9px',
                 color: safeTheme.textColor,
                 opacity: 0.7,
-                marginBottom: '1rem'
+                marginBottom: '0.5rem'
               }}>
                 Help support my work and content creation
               </p>
               <button style={{
-                padding: '0.75rem 1.5rem',
+                padding: '0.4rem 0.8rem',
                 backgroundColor: '#ef4444',
                 color: 'white',
                 border: 'none',
-                borderRadius: '8px',
-                fontSize: '14px',
+                borderRadius: '4px',
+                fontSize: '10px',
                 fontWeight: '600',
                 cursor: 'pointer'
               }}>
@@ -679,51 +679,51 @@ export default function PreviewContent({ blocks, theme, username }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: animationDelay }}
             className="newsletter-block"
-            style={{ padding: '1rem' }}
+            style={{ padding: '0.5rem' }}
           >
             <div style={{
-              padding: '1.5rem',
+              padding: '0.75rem',
               backgroundColor: `${theme.primaryColor}10`,
-              borderRadius: '12px',
+              borderRadius: '6px',
               border: `1px solid ${theme.primaryColor}20`,
               textAlign: 'center'
             }}>
-              <Mail size={32} style={{ color: theme.primaryColor, margin: '0 auto 1rem' }} />
+              <Mail size={16} style={{ color: theme.primaryColor, margin: '0 auto 0.5rem' }} />
               <h3 style={{
-                fontSize: '18px',
+                fontSize: '12px',
                 fontWeight: '600',
-                margin: '0 0 0.5rem 0',
+                margin: '0 0 0.25rem 0',
                 color: theme.textColor
               }}>
                 {block.content.title || 'Stay Updated'}
               </h3>
               <p style={{
-                fontSize: '14px',
+                fontSize: '9px',
                 color: safeTheme.textColor,
                 opacity: 0.8,
-                marginBottom: '1rem'
+                marginBottom: '0.5rem'
               }}>
                 {block.content.description || 'Subscribe to get my latest updates'}
               </p>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '0.25rem' }}>
                 <input
                   type="email"
                   placeholder="Enter your email"
                   style={{
                     flex: 1,
-                    padding: '0.75rem',
+                    padding: '0.4rem',
                     border: `1px solid ${theme.primaryColor}40`,
-                    borderRadius: '8px',
-                    fontSize: '14px'
+                    borderRadius: '4px',
+                    fontSize: '10px'
                   }}
                 />
                 <button style={{
-                  padding: '0.75rem 1.5rem',
+                  padding: '0.4rem 0.8rem',
                   backgroundColor: theme.primaryColor,
                   color: 'white',
                   border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
+                  borderRadius: '4px',
+                  fontSize: '10px',
                   fontWeight: '600',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap'
@@ -743,32 +743,32 @@ export default function PreviewContent({ blocks, theme, username }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: animationDelay }}
             className="gallery-block"
-            style={{ padding: '1rem' }}
+            style={{ padding: '0.5rem' }}
           >
             {(!block.content.images || block.content.images.length === 0) ? (
               <div style={{
-                padding: '2rem',
+                padding: '1rem',
                 textAlign: 'center',
                 border: '2px dashed #e5e7eb',
-                borderRadius: '12px',
+                borderRadius: '6px',
                 color: '#6b7280'
               }}>
-                <Image size={32} style={{ margin: '0 auto 1rem' }} />
-                <p style={{ fontSize: '14px' }}>No images added yet</p>
-                <p style={{ fontSize: '12px', opacity: 0.7 }}>Add images in the properties panel</p>
+                <Image size={16} style={{ margin: '0 auto 0.5rem' }} />
+                <p style={{ fontSize: '9px' }}>No images added yet</p>
+                <p style={{ fontSize: '8px', opacity: 0.7 }}>Add images in the properties panel</p>
               </div>
             ) : (
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: `repeat(${block.content.columns || 2}, 1fr)`,
-                gap: '0.5rem'
+                gap: '0.25rem'
               }}>
                 {block.content.images.map((image, index) => (
                   <div
                     key={index}
                     style={{
                       aspectRatio: '1',
-                      borderRadius: '8px',
+                      borderRadius: '4px',
                       overflow: 'hidden',
                       backgroundColor: '#f3f4f6'
                     }}
@@ -798,18 +798,18 @@ export default function PreviewContent({ blocks, theme, username }) {
             transition={{ delay: animationDelay }}
             className="placeholder-block"
             style={{ 
-              padding: '2rem 1rem',
+              padding: '1rem 0.5rem',
               textAlign: 'center',
               color: '#6b7280',
               border: '2px dashed #e5e7eb',
-              borderRadius: '12px',
-              margin: '1rem'
+              borderRadius: '6px',
+              margin: '0.5rem'
             }}
           >
-            <p style={{ fontSize: '14px', fontWeight: '500' }}>
+            <p style={{ fontSize: '9px', fontWeight: '500' }}>
               {block.type.charAt(0).toUpperCase() + block.type.slice(1)} Block
             </p>
-            <p style={{ fontSize: '12px', opacity: 0.7 }}>
+            <p style={{ fontSize: '8px', opacity: 0.7 }}>
               Coming soon! This block type is under development.
             </p>
           </motion.div>
@@ -835,8 +835,8 @@ export default function PreviewContent({ blocks, theme, username }) {
         {/* Branding */}
         <div style={{
           textAlign: 'center',
-          padding: '2rem 1rem',
-          fontSize: '12px',
+          padding: '1rem 0.5rem',
+          fontSize: '8px',
           color: safeTheme.textColor || '#000000',
           opacity: 0.5
         }}>
@@ -846,3 +846,6 @@ export default function PreviewContent({ blocks, theme, username }) {
     </div>
   )
 }
+
+// Use default memo for better real-time updates
+export default memo(PreviewContent)

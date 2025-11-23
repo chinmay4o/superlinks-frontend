@@ -27,6 +27,7 @@
 
 @layer base {
   :root {
+    /* Color variables */
     --background: 0 0% 100%;
     --foreground: 224 71.4% 4.1%;
     --card: 0 0% 100%;
@@ -47,6 +48,122 @@
     --input: 220 13% 91%;
     --ring: 224 71.4% 4.1%;
     --radius: 0.5rem;
+
+    /* Typography - reduced by ~10% */
+    --text-xs: 0.675rem;    /* was 0.75rem */
+    --text-sm: 0.7875rem;   /* was 0.875rem */
+    --text-base: 0.9rem;    /* was 1rem */
+    --text-lg: 1.0125rem;   /* was 1.125rem */
+    --text-xl: 1.125rem;    /* was 1.25rem */
+    --text-2xl: 1.35rem;    /* was 1.5rem */
+    --text-3xl: 1.6875rem;  /* was 1.875rem */
+    --text-4xl: 2.025rem;   /* was 2.25rem */
+    --text-5xl: 2.7rem;     /* was 3rem */
+    --text-6xl: 3.375rem;   /* was 3.75rem */
+
+    /* Line heights */
+    --leading-3: 0.75rem;
+    --leading-4: 1rem;
+    --leading-5: 1.25rem;
+    --leading-6: 1.5rem;
+    --leading-7: 1.75rem;
+    --leading-8: 2rem;
+    --leading-9: 2.25rem;
+    --leading-10: 2.5rem;
+
+    /* Spacing - reduced by ~10% */
+    --space-0: 0px;
+    --space-px: 1px;
+    --space-0-5: 0.1125rem; /* was 0.125rem */
+    --space-1: 0.225rem;    /* was 0.25rem */
+    --space-1-5: 0.3375rem; /* was 0.375rem */
+    --space-2: 0.45rem;     /* was 0.5rem */
+    --space-2-5: 0.5625rem; /* was 0.625rem */
+    --space-3: 0.675rem;    /* was 0.75rem */
+    --space-3-5: 0.7875rem; /* was 0.875rem */
+    --space-4: 0.9rem;      /* was 1rem */
+    --space-5: 1.125rem;    /* was 1.25rem */
+    --space-6: 1.35rem;     /* was 1.5rem */
+    --space-7: 1.575rem;    /* was 1.75rem */
+    --space-8: 1.8rem;      /* was 2rem */
+    --space-9: 2.025rem;    /* was 2.25rem */
+    --space-10: 2.25rem;    /* was 2.5rem */
+    --space-11: 2.475rem;   /* was 2.75rem */
+    --space-12: 2.7rem;     /* was 3rem */
+    --space-14: 3.15rem;    /* was 3.5rem */
+    --space-16: 3.6rem;     /* was 4rem */
+    --space-20: 4.5rem;     /* was 5rem */
+    --space-24: 5.4rem;     /* was 6rem */
+    --space-28: 6.3rem;     /* was 7rem */
+    --space-32: 7.2rem;     /* was 8rem */
+    --space-36: 8.1rem;     /* was 9rem */
+    --space-40: 9.0rem;     /* was 10rem */
+    --space-44: 9.9rem;     /* was 11rem */
+    --space-48: 10.8rem;    /* was 12rem */
+    --space-52: 11.7rem;    /* was 13rem */
+    --space-56: 12.6rem;    /* was 14rem */
+    --space-60: 13.5rem;    /* was 15rem */
+    --space-64: 14.4rem;    /* was 16rem */
+    --space-72: 16.2rem;    /* was 18rem */
+    --space-80: 18.0rem;    /* was 20rem */
+    --space-96: 21.6rem;    /* was 24rem */
+
+    /* Component heights - reduced by ~10% */
+    --input-height-sm: 1.8rem;     /* was 2rem */
+    --input-height-md: 2.25rem;    /* was 2.5rem */
+    --input-height-lg: 2.7rem;     /* was 3rem */
+
+    --button-height-sm: 1.8rem;    /* was 2rem */
+    --button-height-md: 2.25rem;   /* was 2.5rem */
+    --button-height-lg: 2.7rem;    /* was 3rem */
+
+    /* Container sizes - reduced by ~10% */
+    --container-sm: 27rem;    /* was 30rem */
+    --container-md: 36rem;    /* was 40rem */
+    --container-lg: 45rem;    /* was 50rem */
+    --container-xl: 54rem;    /* was 60rem */
+    --container-2xl: 63rem;   /* was 70rem */
+
+    /* Product Creation Flow - Extra compact (20% reduction) */
+    --product-text-xs: 0.6rem;
+    --product-text-sm: 0.7rem;
+    --product-text-base: 0.8rem;
+    --product-text-lg: 0.9rem;
+    --product-text-xl: 1.0rem;
+    --product-text-2xl: 1.2rem;
+    
+    --product-space-1: 0.2rem;
+    --product-space-2: 0.4rem;
+    --product-space-3: 0.6rem;
+    --product-space-4: 0.8rem;
+    --product-space-6: 1.2rem;
+    --product-space-8: 1.6rem;
+    
+    --product-input-height-sm: 1.6rem;
+    --product-input-height-md: 2.0rem;
+    --product-input-height-lg: 2.4rem;
+    
+    --product-button-height-sm: 1.6rem;
+    --product-button-height-md: 2.0rem;
+    --product-button-height-lg: 2.4rem;
+
+    /* Card and section padding */
+    --card-padding-sm: var(--space-3);
+    --card-padding-md: var(--space-4);
+    --card-padding-lg: var(--space-6);
+    --section-padding-sm: var(--space-4);
+    --section-padding-md: var(--space-6);
+    --section-padding-lg: var(--space-8);
+
+    /* Border radius - slightly reduced */
+    --radius-none: 0px;
+    --radius-sm: 0.1rem;     /* was 0.125rem */
+    --radius-md: 0.3rem;     /* was 0.375rem */
+    --radius-lg: 0.4rem;     /* was 0.5rem */
+    --radius-xl: 0.6rem;     /* was 0.75rem */
+    --radius-2xl: 0.8rem;    /* was 1rem */
+    --radius-3xl: 1.2rem;    /* was 1.5rem */
+    --radius-full: 9999px;
   }
 
   .dark {
@@ -301,7 +418,97 @@
 
 /* Custom components */
 .dashboard-card {
-  @apply bg-card border border-border rounded-lg p-6 shadow-sm;
+  @apply bg-card border border-border rounded-lg shadow-sm;
+  padding: var(--card-padding-md);
+}
+
+/* Button heights using CSS variables */
+.btn-sm {
+  height: var(--button-height-sm);
+}
+
+.btn-md {
+  height: var(--button-height-md);
+}
+
+.btn-lg {
+  height: var(--button-height-lg);
+}
+
+.btn-icon {
+  height: var(--button-height-md);
+  width: var(--button-height-md);
+}
+
+/* Input heights using CSS variables */
+.input-sm {
+  height: var(--input-height-sm);
+}
+
+.input-md {
+  height: var(--input-height-md);
+}
+
+.input-lg {
+  height: var(--input-height-lg);
+}
+
+/* Card padding using CSS variables */
+.card-padding-sm {
+  padding: var(--card-padding-sm);
+}
+
+.card-padding-md {
+  padding: var(--card-padding-md);
+}
+
+.card-padding-lg {
+  padding: var(--card-padding-lg);
+}
+
+/* Product Creation Flow - Extra compact styling */
+.product-creation-page {
+  font-size: var(--product-text-base);
+}
+
+.product-creation-page h1 {
+  font-size: var(--product-text-2xl);
+}
+
+.product-creation-page h2 {
+  font-size: var(--product-text-xl);
+}
+
+.product-creation-page h3 {
+  font-size: var(--product-text-lg);
+}
+
+.product-creation-page .btn-sm {
+  height: var(--product-button-height-sm);
+  font-size: var(--product-text-sm);
+}
+
+.product-creation-page .btn-md {
+  height: var(--product-button-height-md);
+  font-size: var(--product-text-base);
+}
+
+.product-creation-page .input-sm {
+  height: var(--product-input-height-sm);
+  font-size: var(--product-text-sm);
+}
+
+.product-creation-page .input-md {
+  height: var(--product-input-height-md);
+  font-size: var(--product-text-base);
+}
+
+.product-creation-page .card-padding-md {
+  padding: var(--product-space-4);
+}
+
+.product-creation-page .space-compact {
+  gap: var(--product-space-3);
 }
 
 .stat-card {
