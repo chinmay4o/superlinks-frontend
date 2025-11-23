@@ -235,7 +235,6 @@ export function BioBuilderPageNew() {
                 username={user?.username}
                 previewMode={previewMode}
                 loading={loading}
-                key={`preview-${JSON.stringify(bioData.profile)}-${JSON.stringify(bioData.customization)}-${bioData.blocks?.length || 0}`}
               />
             </div>
           </div>
