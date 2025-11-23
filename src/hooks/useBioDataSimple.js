@@ -50,8 +50,6 @@ export const useBioDataSimple = () => {
       const response = await bioService.getBio()
       
       if (response.bio) {
-        console.log('Raw bio response:', response) // Debug log
-        
         // Handle legacy data structure - convert old format if no blocks exist
         let blocks = response.bio.blocks || []
         if (blocks.length === 0) {
@@ -118,15 +116,12 @@ export const useBioDataSimple = () => {
           }
         }
         
-        console.log('Mapped bio data:', newBioData) // Debug log
         setBioData(newBioData)
         
         // Auto-select first block if available
         if (blocks.length > 0 && !selectedBlockId) {
           setSelectedBlockId(blocks[0].id)
         }
-      } else {
-        console.log('No bio data received from server')
       }
     } catch (error) {
       console.error('Error fetching bio:', error)
@@ -156,11 +151,31 @@ export const useBioDataSimple = () => {
   }, [])
 
   // Update profile data directly (real-time updates)
+  // CRITICAL: Also sync with header block content for preview
   const updateProfile = useCallback((profileUpdates) => {
-    setBioData(prev => ({
-      ...prev,
-      profile: { ...prev.profile, ...profileUpdates }
-    }))
+    setBioData(prev => {
+      const updatedProfile = { ...prev.profile, ...profileUpdates }
+      
+      // Find and update header block content to match profile
+      const updatedBlocks = prev.blocks.map(block => {
+        if (block.type === 'header') {
+          return {
+            ...block,
+            content: {
+              ...block.content,
+              ...profileUpdates // Sync profile updates to header block
+            }
+          }
+        }
+        return block
+      })
+      
+      return {
+        ...prev,
+        profile: updatedProfile,
+        blocks: updatedBlocks
+      }
+    })
   }, [])
 
   // Update customization directly (real-time updates)
@@ -173,7 +188,7 @@ export const useBioDataSimple = () => {
 
   // Add new block
   const addBlock = useCallback(async (blockType) => {
-    const newBlock = createNewBlock(blockType, bioData.blocks.length)
+    const newBlock = createNewBlock(blockType, bioData.blocks.length, bioData.profile)
     
     try {
       setSaving(true)
@@ -217,17 +232,42 @@ export const useBioDataSimple = () => {
   }, [bioData.blocks])
 
   // Update block directly (real-time updates)
-  const updateBlock = useCallback((blockId, blockUpdates) => {
-    setBioData(prev => ({
-      ...prev,
-      blocks: prev.blocks.map(block =>
-        block.id === blockId ? { ...block, ...blockUpdates } : block
-      )
-    }))
+  // CRITICAL: Also sync header block changes back to profile
+  const updateBlock = useCallback(async (blockId, blockUpdates) => {
+    // Optimistic update for immediate UI feedback
+    setBioData(prev => {
+      const updatedBlocks = prev.blocks.map(block => {
+        if (block.id === blockId) {
+          return { ...block, ...blockUpdates }
+        }
+        return block
+      })
+      
+      // If updating header block, sync content back to profile
+      const updatedBlock = updatedBlocks.find(b => b.id === blockId)
+      let updatedProfile = prev.profile
+      
+      if (updatedBlock && updatedBlock.type === 'header' && blockUpdates.content) {
+        updatedProfile = {
+          ...prev.profile,
+          ...blockUpdates.content
+        }
+      }
+      
+      return {
+        ...prev,
+        profile: updatedProfile,
+        blocks: updatedBlocks
+      }
+    })
     
-    // Update selected block if it's the one being updated
-    if (selectedBlockId === blockId) {
-      // selectedBlock will update automatically due to useMemo dependency
+    // Save to server (async, non-blocking for UI)
+    try {
+      await bioService.updateBlock(blockId, blockUpdates)
+    } catch (error) {
+      console.error('Error updating block:', error)
+      toast.error('Failed to update block')
+      // Note: We don't revert optimistic update for better UX
     }
   }, [selectedBlockId])
 
@@ -266,21 +306,43 @@ export const useBioDataSimple = () => {
   }, [bioData.blocks, selectedBlockId])
 
   // Toggle block visibility
-  const toggleBlockVisibility = useCallback((blockId, isActive) => {
+  const toggleBlockVisibility = useCallback(async (blockId, isActive) => {
+    // Optimistic update
     setBioData(prev => ({
       ...prev,
       blocks: prev.blocks.map(block =>
         block.id === blockId ? { ...block, isActive } : block
       )
     }))
+    
+    // Save to server
+    try {
+      await bioService.toggleBlockVisibility(blockId, isActive)
+    } catch (error) {
+      console.error('Error toggling block visibility:', error)
+      toast.error('Failed to update block visibility')
+    }
   }, [])
 
   // Reorder blocks
-  const reorderBlocks = useCallback((newBlocks) => {
+  const reorderBlocks = useCallback(async (newBlocks) => {
+    // Optimistic update
     setBioData(prev => ({
       ...prev,
       blocks: newBlocks
     }))
+    
+    // Save to server
+    try {
+      const blockOrders = newBlocks.map((block, index) => ({
+        id: block.id,
+        order: index
+      }))
+      await bioService.reorderBlocks(blockOrders)
+    } catch (error) {
+      console.error('Error reordering blocks:', error)
+      toast.error('Failed to reorder blocks')
+    }
   }, [])
 
   // Save all changes to server
@@ -356,13 +418,13 @@ export const useBioDataSimple = () => {
 }
 
 // Helper function to create new blocks
-function createNewBlock(type, order) {
+function createNewBlock(type, order, currentProfile = {}) {
   const blockTemplates = {
     header: {
-      avatar: '',
-      title: 'Your Name',
-      description: 'Tell your audience about yourself',
-      location: ''
+      avatar: currentProfile.avatar || '',
+      title: currentProfile.title || 'Your Name',
+      description: currentProfile.description || 'Tell your audience about yourself',
+      location: currentProfile.location || ''
     },
     text: {
       text: 'Add your text here',

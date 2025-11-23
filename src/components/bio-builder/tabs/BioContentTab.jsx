@@ -55,7 +55,6 @@ export default function BioContentTab({
   
   // Update local state when bio data changes from outside
   useEffect(() => {
-    console.log('BioContentTab - Bio data update:', bio?.profile) // Debug log
     setLocalTitle(bio?.profile?.title || '')
     setLocalDescription(bio?.profile?.description || '')
   }, [bio?.profile?.title, bio?.profile?.description])
@@ -187,21 +186,21 @@ export default function BioContentTab({
         
         {showAddBlocks && (
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {BLOCK_TYPES.map((blockType) => {
                 const Icon = blockType.icon
                 return (
                   <Button
                     key={blockType.type}
                     variant="outline"
-                    className="h-auto p-4 flex-col items-start text-left space-y-2"
+                    className="h-auto p-2 flex-col items-start text-left space-y-1 min-h-[60px]"
                     onClick={() => handleAddBlock(blockType.type)}
                   >
-                    <div className="flex items-center gap-2">
-                      <Icon className="h-4 w-4" />
-                      <span className="font-medium">{blockType.label}</span>
+                    <div className="flex items-center gap-1.5">
+                      <Icon className="h-3 w-3" />
+                      <span className="font-medium text-sm">{blockType.label}</span>
                     </div>
-                    <span className="text-xs text-gray-500">{blockType.description}</span>
+                    <span className="text-xs text-gray-500 leading-tight overflow-hidden text-ellipsis">{blockType.description}</span>
                   </Button>
                 )
               })}

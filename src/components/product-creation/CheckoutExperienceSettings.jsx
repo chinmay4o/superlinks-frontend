@@ -44,12 +44,9 @@ export function CheckoutExperienceSettings({ productData, updateProductData }) {
           <div>
             <div className="font-medium">Next Page Checkout</div>
             <div className="text-sm text-muted-foreground">
-              Standard checkout experience
+              Standard checkout experience - customize customer information fields below
             </div>
           </div>
-          <Button variant="outline" size="sm">
-            Customise
-          </Button>
         </div>
       </div>
 

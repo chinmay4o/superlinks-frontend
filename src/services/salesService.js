@@ -72,19 +72,30 @@ const salesService = {
 
   // Get purchase details
   getPurchaseDetails: async (purchaseId) => {
+    console.log('salesService.getPurchaseDetails called with:', purchaseId)
+    
     const cacheKey = `purchase-${purchaseId}`
     const cached = cacheService.get(cacheKey)
     
     if (cached) {
+      console.log('Returning cached purchase details for:', purchaseId)
       return cached
     }
     
-    const response = await api.get(`/purchases/${purchaseId}`)
+    console.log('Making API request to /purchases/' + purchaseId)
     
-    // Cache individual purchase for 10 minutes
-    cacheService.set(cacheKey, response.data, 10 * 60 * 1000)
-    
-    return response.data
+    try {
+      const response = await api.get(`/purchases/${purchaseId}`)
+      console.log('API response for purchase details:', response.status, response.data)
+      
+      // Cache individual purchase for 10 minutes
+      cacheService.set(cacheKey, response.data, 10 * 60 * 1000)
+      
+      return response.data
+    } catch (error) {
+      console.error('API error in getPurchaseDetails:', error.response?.status, error.response?.data)
+      throw error
+    }
   },
 
   // Get user's own purchases (as buyer) with caching
@@ -148,8 +159,16 @@ const salesService = {
 
   // Clear sales cache
   clearCache: () => {
+    console.log('Clearing sales cache...')
     cacheService.clearByPattern('purchases')
     cacheService.clearByPattern('sales-stats')
+  },
+
+  // Debug cache state
+  debugCache: () => {
+    console.log('Cache debug info:')
+    console.log('- All cache keys:', Object.keys(cacheService._cache || {}))
+    console.log('- Purchase-related keys:', Object.keys(cacheService._cache || {}).filter(key => key.includes('purchase')))
   }
 }
 

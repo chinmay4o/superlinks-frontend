@@ -194,9 +194,63 @@ export function BoostSalesSettings({ productData, updateProductData }) {
               {productData.boostSales.automatedEmail && (
                 <Badge variant="default" className="text-xs">Active</Badge>
               )}
-              <Button variant="outline" size="sm">
-                {productData.boostSales.automatedEmail ? 'Edit' : 'Setup'}
-              </Button>
+              <Dialog open={emailModal} onOpenChange={setEmailModal}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    {productData.boostSales.automatedEmail ? 'Edit' : 'Setup'}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Setup Automated Email</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="emailSubject">Email Subject *</Label>
+                      <Input
+                        id="emailSubject"
+                        value={productData.boostSales.emailData?.subject || ''}
+                        onChange={(e) => updateProductData('boostSales.emailData.subject', e.target.value)}
+                        placeholder="Thank you for your purchase!"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="emailTemplate">Email Template *</Label>
+                      <Textarea
+                        id="emailTemplate"
+                        value={productData.boostSales.emailData?.template || ''}
+                        onChange={(e) => updateProductData('boostSales.emailData.template', e.target.value)}
+                        placeholder="Hi {customerName},\n\nThank you for purchasing {productName}!\n\nYour download link: {downloadLink}\n\nBest regards,\n{storeName}"
+                        rows={8}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="delayMinutes">Send Delay (minutes)</Label>
+                      <Input
+                        id="delayMinutes"
+                        type="number"
+                        value={productData.boostSales.emailData?.delayMinutes || 0}
+                        onChange={(e) => updateProductData('boostSales.emailData.delayMinutes', Number(e.target.value))}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Available variables: {'{'}customerName{'}'}, {'{'}productName{'}'}, {'{'}downloadLink{'}'}, {'{'}storeName{'}'}, {'{'}orderNumber{'}'}
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setEmailModal(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={() => {
+                        updateProductData('boostSales.automatedEmail', true)
+                        setEmailModal(false)
+                      }}>
+                        Save Email Setup
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
               <Switch
                 checked={productData.boostSales.automatedEmail}
                 onCheckedChange={(checked) => updateProductData('boostSales.automatedEmail', checked)}

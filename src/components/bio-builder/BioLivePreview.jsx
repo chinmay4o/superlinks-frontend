@@ -43,9 +43,12 @@ function BioLivePreview({
             font-family: ${getFontFamily(safeTheme.fontFamily)};
             background-color: ${safeTheme.backgroundColor || '#ffffff'};
             color: ${safeTheme.textColor || '#000000'};
-            min-height: 100vh;
+            min-height: 100%;
+            height: auto;
             overflow-x: hidden;
             line-height: 1.6;
+            margin: 0;
+            padding: 0;
           }
           
           /* Custom scrollbar */
@@ -91,6 +94,18 @@ function BioLivePreview({
               opacity: 1;
               transform: translateY(0);
             }
+          }
+          
+          /* Responsive container */
+          html {
+            height: 100%;
+            font-size: 10px; /* Smaller base font size for preview */
+          }
+          
+          #root {
+            width: 100%;
+            min-height: 100%;
+            overflow-x: hidden;
           }
           
           /* Background image support */
@@ -235,7 +250,7 @@ function BioLivePreview({
               </div>
             </div>
 
-            {/* Content - iframe with mobile scaling matching product builder */}
+            {/* Content - iframe with natural mobile sizing */}
             <div style={{ 
               paddingTop: '16px', 
               height: 'calc(100% - 16px)',
@@ -243,9 +258,8 @@ function BioLivePreview({
               overflow: 'hidden'
             }}>
               <div style={{
-                width: '393px', // iPhone actual width
-                height: '850px', // iPhone actual height
-                transform: 'scale(0.56)', // Scale to fit (221px / 393px ≈ 0.56)
+                width: '100%', // Use full container width
+                height: '100%', // Use full container height
                 transformOrigin: 'top left',
                 pointerEvents: 'auto' // Enable interactions for scrolling
               }}>

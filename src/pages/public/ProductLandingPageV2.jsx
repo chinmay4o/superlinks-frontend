@@ -211,19 +211,22 @@ export function ProductLandingPageV2({
         primary: 'bg-orange-500 hover:bg-orange-600 text-white',
         background: 'bg-orange-50',
         border: 'border-orange-200',
-        accent: 'text-orange-600'
+        accent: 'text-orange-600',
+        hover: 'hover:text-orange-600'
       },
       dusk: {
         primary: 'bg-purple-500 hover:bg-purple-600 text-white',
         background: 'bg-purple-50',
         border: 'border-purple-200',
-        accent: 'text-purple-600'
+        accent: 'text-purple-600',
+        hover: 'hover:text-purple-600'
       },
       default: {
         primary: 'bg-blue-600 hover:bg-blue-700 text-white',
         background: 'bg-gray-50',
         border: 'border-gray-200',
-        accent: 'text-blue-600'
+        accent: 'text-blue-600',
+        hover: 'hover:text-blue-600'
       }
     };
     return themes[themeStyle] || themes.default;
@@ -317,7 +320,11 @@ export function ProductLandingPageV2({
   const mainImage = product.images?.cover?.url || "/placeholder-product.jpg";
   const productFiles = product.files || [];
   const creator = product.creator || {};
-  const themeStyles = getThemeStyles(product?.advanced?.themeStyle);
+  // Support multiple theme data sources: preview mock, published product, or fallback
+  const themeValue = product?.previewMode 
+    ? (product?.themeStyle || product?.advanced?.themeStyle || 'default')  // Preview mode
+    : (product?.advanced?.themeStyle || product?.themeStyle || 'default'); // Published mode
+  const themeStyles = getThemeStyles(themeValue);
   
   // Optional sections data
   const testimonials = product?.optionalSections?.testimonialsData || [];
@@ -349,7 +356,7 @@ export function ProductLandingPageV2({
                 href="https://superlinks.ai"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-semibold text-gray-900 hover:text-blue-600 transition-colors"
+                className={`font-semibold text-gray-900 ${themeStyles.hover} transition-colors`}
               >
                 Superlinks
               </a>
@@ -631,7 +638,7 @@ export function ProductLandingPageV2({
                   </div>
                   <Button
                     onClick={handlePurchase}
-                    className="w-full h-12 text-base font-semibold bg-black hover:bg-gray-800 text-white"
+                    className={`w-full h-12 text-base font-semibold ${themeStyles.primary}`}
                     size="lg"
                   >
                     <ShoppingCart className="h-5 w-5 mr-2" />

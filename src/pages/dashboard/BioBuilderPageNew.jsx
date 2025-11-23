@@ -16,7 +16,7 @@ import { useBioDataSimple } from '../../hooks/useBioDataSimple'
 import BioContentTab from '../../components/bio-builder/tabs/BioContentTab'
 import BioThemeTab from '../../components/bio-builder/tabs/BioThemeTab'
 import BioSettingsTab from '../../components/bio-builder/tabs/BioSettingsTab'
-import BioLivePreview from '../../components/bio-builder/BioLivePreview'
+import BioLivePreview from '../../components/bio-builder/BioLivePreviewNew'
 
 // Import CSS
 import '../../styles/bio-builder.css'

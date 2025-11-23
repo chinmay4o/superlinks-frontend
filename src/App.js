@@ -40,6 +40,7 @@ import { CheckoutPage } from './pages/public/CheckoutPage'
 import { ThankYouPage } from './pages/public/ThankYouPage'
 import { UserProfilePage } from './pages/public/UserProfilePage'
 import { PublicBioPage } from './pages/public/PublicBioPage'
+import { BioPreviewPage } from './pages/public/BioPreviewPage'
 
 // Content Viewer
 import { ContentViewer } from './components/ContentViewer'
@@ -117,6 +118,7 @@ function App() {
               
               {/* Public Routes */}
               <Route path="/preview/:username/:slug" element={<ProductPreviewPage />} />
+              <Route path="/preview/bio/:username" element={<BioPreviewPage />} />
               <Route path="/p/:slug" element={<ProductLandingPageV2 />} />
               <Route path="/checkout/:productId" element={<CheckoutPage />} />
               <Route path="/thank-you/:purchaseId" element={<ThankYouPage />} />

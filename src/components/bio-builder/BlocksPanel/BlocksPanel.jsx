@@ -82,7 +82,7 @@ function DraggableBlock({ block, isSelected, onSelect, onToggle, onDelete }) {
         </div>
         
         <div className="block-icon">
-          <Icon className="h-4 w-4" />
+          <Icon className="h-3 w-3" />
         </div>
         
         <div className="block-label">
@@ -174,7 +174,7 @@ export default function BlocksPanel({
                 setShowAddMenu(false)
               }}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-3 w-3" />
               <span>{label}</span>
             </button>
           ))}

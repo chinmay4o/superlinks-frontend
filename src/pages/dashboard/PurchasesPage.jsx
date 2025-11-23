@@ -34,6 +34,9 @@ import { Checkbox } from '../../components/ui/checkbox'
 import { toast } from 'react-hot-toast'
 import { dashboardColors } from '../../lib/dashboardColors'
 import { useSalesData } from '../../hooks/useSalesData'
+import salesService from '../../services/salesService'
+import EmailComposerModal from '../../components/modals/EmailComposerModal'
+import { downloadReceipt } from '../../utils/receiptGenerator'
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5005/api'
 
@@ -86,6 +89,32 @@ export function PurchasesPage() {
   const [timeFilter, setTimeFilter] = useState('all')
   const [productFilter, setProductFilter] = useState('all')
   
+  // Modal states
+  const [emailModalOpen, setEmailModalOpen] = useState(false)
+  const [currentUser, setCurrentUser] = useState(null)
+  
+  // Get current user
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        if (token) {
+          const response = await fetch(`${API_BASE_URL}/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+          if (response.ok) {
+            const userData = await response.json()
+            setCurrentUser(userData.user)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching current user:', error)
+      }
+    }
+    
+    fetchCurrentUser()
+  }, [])
+  
   // Handle filter changes with debouncing
   const handleFilterChange = useCallback((newFilters) => {
     updateFilters(newFilters)
@@ -113,18 +142,100 @@ export function PurchasesPage() {
   
   const handlePurchaseClick = async (purchase) => {
     try {
-      const detailedPurchase = await getPurchaseDetails(purchase.purchaseId)
+      console.log('Attempting to fetch purchase details for:', purchase.purchaseId)
+      // getPurchaseDetails already sets selectedPurchase in the hook
+      const purchaseDetails = await getPurchaseDetails(purchase.purchaseId)
+      console.log('Successfully fetched purchase details:', purchaseDetails)
       setSidebarOpen(true)
     } catch (error) {
-      // If details fail to load, use basic purchase data
+      console.error('Error fetching purchase details:', error)
+      console.error('Error response:', error.response?.data)
+      console.error('Error status:', error.response?.status)
+      
+      // If details fail to load, use basic purchase data as fallback
       setSelectedPurchase(purchase)
       setSidebarOpen(true)
+      
+      // Show specific error message based on the error type
+      if (error.response?.status === 403) {
+        toast.error('Access denied - unable to load purchase details')
+      } else if (error.response?.status === 404) {
+        toast.error('Purchase not found')
+      } else if (error.response?.status >= 500) {
+        toast.error('Server error - please try again later')
+      } else {
+        toast.error('Could not load full purchase details, showing basic information')
+      }
     }
   }
   
   const closeSidebar = () => {
     setSidebarOpen(false)
     setSelectedPurchase(null)
+  }
+  
+  // Handle contact customer button
+  const handleContactCustomer = () => {
+    if (selectedPurchase && currentUser) {
+      setEmailModalOpen(true)
+    } else {
+      toast.error('Unable to open email composer')
+    }
+  }
+  
+  // Handle send email
+  const handleSendEmail = async (emailData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/purchases/${selectedPurchase.purchaseId}/email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(emailData)
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to send email')
+      }
+      
+      setEmailModalOpen(false)
+    } catch (error) {
+      console.error('Error sending email:', error)
+      throw error
+    }
+  }
+  
+  // Handle download receipt button
+  const handleDownloadReceipt = async () => {
+    try {
+      if (!selectedPurchase) {
+        toast.error('No purchase selected')
+        return
+      }
+      
+      // Fetch receipt data from backend
+      const response = await fetch(`${API_BASE_URL}/purchases/${selectedPurchase.purchaseId}/receipt`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch receipt data')
+      }
+      
+      const receiptData = await response.json()
+      
+      // Generate and download PDF
+      await downloadReceipt(receiptData.purchase, receiptData.product, receiptData.seller)
+      toast.success('Receipt downloaded successfully!')
+      
+    } catch (error) {
+      console.error('Error downloading receipt:', error)
+      toast.error('Failed to download receipt')
+    }
   }
   
   const getStatusBadge = (status) => {
@@ -400,10 +511,32 @@ export function PurchasesPage() {
             Track and manage customer transactions
           </p>
         </div>
-        <Button onClick={refresh} variant="outline" className="hover:bg-purple-50 hover:border-purple-300">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => {
+              console.log('=== DEBUGGING SALES DATA ===')
+              console.log('Current purchases count:', purchases.length)
+              console.log('Sample purchase:', purchases[0])
+              console.log('Selected purchase:', selectedPurchase)
+              console.log('Pagination:', pagination)
+              console.log('Filters:', filters)
+              
+              // Debug cache
+              salesService.debugCache()
+              
+              console.log('=== END DEBUG ===')
+            }} 
+            variant="outline" 
+            size="sm"
+            className="hover:bg-blue-50 hover:border-blue-300"
+          >
+            🐛 Debug
+          </Button>
+          <Button onClick={refresh} variant="outline" className="hover:bg-purple-50 hover:border-purple-300">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
       
       {/* Stats Cards with progressive loading */}
@@ -975,11 +1108,19 @@ export function PurchasesPage() {
               
               {/* Actions */}
               <div className="space-y-2">
-                <Button variant="outline" className="w-full hover:bg-purple-50 hover:border-purple-300">
+                <Button 
+                  variant="outline" 
+                  className="w-full hover:bg-purple-50 hover:border-purple-300"
+                  onClick={handleContactCustomer}
+                >
                   <Mail className="h-4 w-4 mr-2" />
                   Contact Customer
                 </Button>
-                <Button variant="outline" className="w-full hover:bg-green-50 hover:border-green-300">
+                <Button 
+                  variant="outline" 
+                  className="w-full hover:bg-green-50 hover:border-green-300"
+                  onClick={handleDownloadReceipt}
+                >
                   <Download className="h-4 w-4 mr-2" />
                   Download Receipt
                 </Button>
@@ -993,6 +1134,19 @@ export function PurchasesPage() {
           </div>
         </div>
       )}
+      
+      {/* Email Composer Modal */}
+      <EmailComposerModal
+        isOpen={emailModalOpen}
+        onClose={() => setEmailModalOpen(false)}
+        customerEmail={selectedPurchase?.buyer?.email}
+        customerName={selectedPurchase?.buyer?.name}
+        productTitle={selectedPurchase?.product?.title}
+        userEmail={currentUser?.email}
+        userName={currentUser?.name}
+        purchaseId={selectedPurchase?.purchaseId}
+        onSendEmail={handleSendEmail}
+      />
     </div>
   )
 }
