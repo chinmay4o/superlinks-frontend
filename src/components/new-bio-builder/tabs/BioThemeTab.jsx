@@ -4,9 +4,8 @@ import { Button } from '../../ui/button'
 import { Input } from '../../ui/input'
 import { Label } from '../../ui/label'
 import { Separator } from '../../ui/separator'
-import { 
-  Palette, Monitor, Smartphone, Upload, 
-  Trash2, Image, Type, Layout
+import {
+  Palette, Upload, Trash2, Image, Type, Layout
 } from 'lucide-react'
 
 const THEME_PRESETS = [
@@ -481,32 +480,6 @@ export default function BioThemeTab({
         </CardContent>
       </Card>
 
-      {/* Preview Modes */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Preview Device</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex-1"
-            >
-              <Smartphone className="h-4 w-4 mr-2" />
-              Mobile
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex-1"
-            >
-              <Monitor className="h-4 w-4 mr-2" />
-              Desktop
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }

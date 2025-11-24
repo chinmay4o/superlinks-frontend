@@ -1,51 +1,36 @@
-import React, { memo, useMemo, useState, useEffect } from 'react'
+import React, { memo } from 'react'
+import PreviewContent from '../bio-builder/MobilePreview/PreviewContent'
 
-function BioLivePreview({ 
-  bio, 
-  blocks, 
-  theme, 
-  username, 
+/**
+ * BioLivePreview - Direct rendering approach
+ *
+ * Uses the same PreviewContent component as the public bio page
+ * for guaranteed visual consistency. No iframe, instant updates.
+ */
+function BioLivePreview({
+  bio,
+  blocks,
+  theme,
+  username,
   previewMode = 'mobile',
-  loading 
+  loading
 }) {
-  // Debounced bio data to prevent iframe reloading on every keystroke
-  const [debouncedBioData, setDebouncedBioData] = useState({ bio, blocks, theme })
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedBioData({ bio, blocks, theme })
-    }, 500) // 500ms delay like product creation
-
-    return () => clearTimeout(timer)
-  }, [bio, blocks, theme])
-
-  // Generate preview URL with debounced bio data as params
-  const previewUrl = useMemo(() => {
-    const params = new URLSearchParams({
-      // Profile data
-      avatar: debouncedBioData.bio?.profile?.avatar || '',
-      title: debouncedBioData.bio?.profile?.title || 'Your Name',
-      description: debouncedBioData.bio?.profile?.description || 'Tell your audience about yourself',
-      location: debouncedBioData.bio?.profile?.location || '',
-      // Customization data as JSON (properly encoded)
-      customization: encodeURIComponent(JSON.stringify(debouncedBioData.theme || {})),
-      // Blocks data as JSON (properly encoded)
-      blocks: encodeURIComponent(JSON.stringify(debouncedBioData.blocks || [])),
-      // Settings data as JSON (properly encoded)
-      settings: encodeURIComponent(JSON.stringify(debouncedBioData.bio?.settings || {})),
-      // Preview mode
-      previewMode: previewMode
-    })
-    
-    return `/preview/bio/${username || 'preview'}?${params.toString()}`
-  }, [debouncedBioData, previewMode, username])
-  
   const previewDisplayUrl = `superlinks.ai/${username || 'username'}`
 
-  // Device Frame Component with proper viewport sizing (matching product creation)
+  // Ensure theme has safe defaults
+  const safeTheme = {
+    fontFamily: 'inter',
+    backgroundColor: '#ffffff',
+    textColor: '#000000',
+    primaryColor: '#000000',
+    buttonStyle: 'rounded',
+    avatarShape: 'circle',
+    ...theme
+  }
+
+  // Device Frame Component with proper viewport sizing
   const DeviceFrame = ({ children, mode }) => {
     if (mode === 'mobile') {
-      // Compact mobile preview matching product creation
       return (
         <div className="mx-auto" style={{ width: '233px' }}>
           {/* iPhone Frame */}
@@ -53,7 +38,7 @@ function BioLivePreview({
             <div className="bg-white rounded-[14px] overflow-hidden relative" style={{ height: '407px', width: '221px' }}>
               {/* iPhone Dynamic Island */}
               <div className="absolute top-0 left-1/2 transform -translate-x-1/2 bg-black rounded-b-lg z-10" style={{ width: '50px', height: '12px' }}></div>
-              
+
               {/* Status Bar */}
               <div className="absolute left-2 right-2 flex justify-between items-center text-black font-medium z-20" style={{ top: '4px', fontSize: '7px' }}>
                 <span style={{ marginLeft: '26px' }}>9:41</span>
@@ -68,12 +53,12 @@ function BioLivePreview({
                 </div>
               </div>
 
-              {/* Content - iframe pointing to preview page */}
-              <div style={{ 
-                paddingTop: '16px', 
+              {/* Content - Direct rendering */}
+              <div style={{
+                paddingTop: '16px',
                 height: 'calc(100% - 16px)',
                 width: '100%',
-                overflow: 'hidden'
+                overflow: 'auto'
               }}>
                 {children}
               </div>
@@ -102,7 +87,7 @@ function BioLivePreview({
             </div>
 
             {/* Content */}
-            <div style={{ height: 'calc(100% - 28px)', width: '100%', overflow: 'hidden' }}>
+            <div style={{ height: 'calc(100% - 28px)', width: '100%', overflow: 'auto' }}>
               {children}
             </div>
           </div>
@@ -146,20 +131,25 @@ function BioLivePreview({
   return (
     <div style={backgroundStyle}>
       <DeviceFrame mode={previewMode}>
-        <iframe
-          src={previewUrl}
+        {/* Direct rendering - same component as public bio page */}
+        <div
+          className="bio-preview-content"
           style={{
-            width: '100%',
-            height: '100%',
-            border: 'none',
-            backgroundColor: 'white'
+            backgroundColor: safeTheme.backgroundColor,
+            minHeight: '100%',
+            width: '100%'
           }}
-          title="Bio Preview"
-        />
+        >
+          <PreviewContent
+            blocks={blocks || []}
+            theme={safeTheme}
+            username={username}
+          />
+        </div>
       </DeviceFrame>
     </div>
   )
 }
 
-// Use shallow memo for better real-time updates
+// Memo to prevent unnecessary re-renders
 export default memo(BioLivePreview)

@@ -13,22 +13,23 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-export default function BioSettingsTab({ 
-  bio, 
-  user, 
-  onUpdateBio, 
-  loading 
+export default function BioSettingsTab({
+  bio,
+  user,
+  onUpdateSettings,
+  onResetBio,
+  loading
 }) {
-  const [customDomain, setCustomDomain] = useState(bio?.customDomain || '')
-  const [isPublished, setIsPublished] = useState(bio?.isPublished || false)
+  const [customDomain, setCustomDomain] = useState(bio?.settings?.customDomain || '')
+  const [isPublished, setIsPublished] = useState(bio?.settings?.isPublished || false)
   const [seoSettings, setSeoSettings] = useState({
-    metaTitle: bio?.seoTitle || '',
-    metaDescription: bio?.seoDescription || '',
-    keywords: bio?.seoKeywords || ''
+    metaTitle: bio?.settings?.seoTitle || '',
+    metaDescription: bio?.settings?.seoDescription || '',
+    keywords: bio?.settings?.seoKeywords || ''
   })
 
   const handleSettingUpdate = (field, value) => {
-    onUpdateBio({
+    onUpdateSettings({
       [field]: value
     })
   }
@@ -36,7 +37,7 @@ export default function BioSettingsTab({
   const handleSeoUpdate = (field, value) => {
     const newSeoSettings = { ...seoSettings, [field]: value }
     setSeoSettings(newSeoSettings)
-    onUpdateBio({
+    onUpdateSettings({
       [`seo${field.charAt(0).toUpperCase() + field.slice(1)}`]: value
     })
   }
@@ -45,7 +46,7 @@ export default function BioSettingsTab({
     const newPublishState = !isPublished
     setIsPublished(newPublishState)
     handleSettingUpdate('isPublished', newPublishState)
-    
+
     if (newPublishState) {
       toast.success('Bio is now live!')
     } else {
@@ -273,29 +274,29 @@ export default function BioSettingsTab({
               <p className="text-sm text-gray-600">Require a password to view your bio</p>
             </div>
             <Switch
-              checked={bio?.passwordProtected || false}
+              checked={bio?.settings?.passwordProtected || false}
               onCheckedChange={(checked) => handleSettingUpdate('passwordProtected', checked)}
             />
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div>
               <Label>Hide from Search Engines</Label>
               <p className="text-sm text-gray-600">Prevent indexing by search engines</p>
             </div>
             <Switch
-              checked={bio?.noIndex || false}
+              checked={bio?.settings?.noIndex || false}
               onCheckedChange={(checked) => handleSettingUpdate('noIndex', checked)}
             />
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div>
               <Label>Analytics Tracking</Label>
               <p className="text-sm text-gray-600">Track visitor analytics and engagement</p>
             </div>
             <Switch
-              checked={bio?.analyticsEnabled !== false}
+              checked={bio?.settings?.analyticsEnabled !== false}
               onCheckedChange={(checked) => handleSettingUpdate('analyticsEnabled', checked)}
             />
           </div>
@@ -317,18 +318,18 @@ export default function BioSettingsTab({
               <p className="text-sm text-gray-600">Get notified of bio interactions</p>
             </div>
             <Switch
-              checked={bio?.emailNotifications !== false}
+              checked={bio?.settings?.emailNotifications !== false}
               onCheckedChange={(checked) => handleSettingUpdate('emailNotifications', checked)}
             />
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div>
               <Label>Weekly Reports</Label>
               <p className="text-sm text-gray-600">Receive weekly analytics summaries</p>
             </div>
             <Switch
-              checked={bio?.weeklyReports || false}
+              checked={bio?.settings?.weeklyReports || false}
               onCheckedChange={(checked) => handleSettingUpdate('weeklyReports', checked)}
             />
           </div>
@@ -347,7 +348,7 @@ export default function BioSettingsTab({
           <div>
             <Label>Custom CSS</Label>
             <Textarea
-              value={bio?.customCss || ''}
+              value={bio?.settings?.customCss || ''}
               onChange={(e) => handleSettingUpdate('customCss', e.target.value)}
               placeholder="/* Add your custom CSS here */"
               rows={4}
@@ -357,11 +358,11 @@ export default function BioSettingsTab({
               Add custom CSS to further customize your bio page
             </p>
           </div>
-          
+
           <div>
             <Label>Custom HTML Head</Label>
             <Textarea
-              value={bio?.customHead || ''}
+              value={bio?.settings?.customHead || ''}
               onChange={(e) => handleSettingUpdate('customHead', e.target.value)}
               placeholder="<!-- Add custom HTML for <head> section -->"
               rows={3}
@@ -384,14 +385,19 @@ export default function BioSettingsTab({
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-medium text-red-800">Reset Bio</h4>
-                <p className="text-sm text-red-600">Clear all content and reset to default</p>
+                <p className="text-sm text-red-600">Clear all blocks and reset to default</p>
               </div>
               <Button
                 variant="destructive"
                 size="sm"
                 onClick={() => {
-                  if (window.confirm('Are you sure? This will delete all your bio content.')) {
-                    toast.error('Feature coming soon - contact support for bio reset')
+                  if (window.confirm('Are you sure? This will delete all your bio blocks and reset settings to default. This cannot be undone.')) {
+                    if (onResetBio) {
+                      onResetBio()
+                      toast.success('Bio has been reset to default')
+                    } else {
+                      toast.error('Reset functionality not available')
+                    }
                   }
                 }}
               >
@@ -399,7 +405,7 @@ export default function BioSettingsTab({
               </Button>
             </div>
           </div>
-          
+
           <div className="p-4 border border-red-200 rounded-lg bg-red-50">
             <div className="flex items-center justify-between">
               <div>
@@ -410,9 +416,7 @@ export default function BioSettingsTab({
                 variant="destructive"
                 size="sm"
                 onClick={() => {
-                  if (window.confirm('Are you sure? This action cannot be undone.')) {
-                    toast.error('Feature coming soon - contact support for bio deletion')
-                  }
+                  toast.error('To delete your bio page, please contact support at support@superlinks.ai')
                 }}
               >
                 Delete

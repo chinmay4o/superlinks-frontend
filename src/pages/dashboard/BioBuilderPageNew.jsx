@@ -12,11 +12,11 @@ import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
 import { useBioDataSimple } from '../../hooks/useBioDataSimple'
 
-// Import tab components
-import BioContentTab from '../../components/bio-builder/tabs/BioContentTab'
-import BioThemeTab from '../../components/bio-builder/tabs/BioThemeTab'
-import BioSettingsTab from '../../components/bio-builder/tabs/BioSettingsTab'
-import BioLivePreview from '../../components/bio-builder/BioLivePreviewNew'
+// Import tab components (from new-bio-builder)
+import BioContentTab from '../../components/new-bio-builder/tabs/BioContentTab'
+import BioThemeTab from '../../components/new-bio-builder/tabs/BioThemeTab'
+import BioSettingsTab from '../../components/new-bio-builder/tabs/BioSettingsTab'
+import BioLivePreview from '../../components/new-bio-builder/BioLivePreview'
 
 // Import CSS
 import '../../styles/bio-builder.css'
@@ -37,6 +37,7 @@ export function BioBuilderPageNew() {
     handleInputChange,
     updateProfile,
     updateCustomization,
+    updateSettings,
     addBlock,
     updateBlock,
     deleteBlock,
@@ -44,6 +45,7 @@ export function BioBuilderPageNew() {
     toggleBlockVisibility,
     uploadImage,
     saveChanges,
+    resetBio,
     setSelectedBlockId,
     refresh
   } = useBioDataSimple()
@@ -185,7 +187,8 @@ export function BioBuilderPageNew() {
                 <BioSettingsTab
                   bio={bioData}
                   user={user}
-                  onUpdateBio={updateProfile}
+                  onUpdateSettings={updateSettings}
+                  onResetBio={resetBio}
                   loading={loading}
                 />
               </TabsContent>
@@ -235,7 +238,6 @@ export function BioBuilderPageNew() {
                 username={user?.username}
                 previewMode={previewMode}
                 loading={loading}
-                key={`preview-${JSON.stringify(bioData.profile)}-${JSON.stringify(bioData.customization)}-${bioData.blocks?.length || 0}`}
               />
             </div>
           </div>

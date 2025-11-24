@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Button } from '../ui/button'
@@ -40,8 +40,6 @@ export default function VisualBioBuilder() {
     setSelectedBlock,
     setHasUnsavedChanges
   } = useBioData()
-  
-  const [previewKey, setPreviewKey] = useState(0)
 
   // Debounced save function for customization updates - now uses the hook
   const debouncedSaveCustomization = useDebouncedCallback(async (customizationData) => {
@@ -77,7 +75,6 @@ export default function VisualBioBuilder() {
       
       // Use the hook's reorder function which handles optimistic updates
       await reorderBlocks(newBlocks)
-      setPreviewKey(prev => prev + 1)
     }
   }
 
@@ -90,8 +87,6 @@ export default function VisualBioBuilder() {
         content: blockTemplate.content,
         settings: blockTemplate.settings
       })
-      
-      setPreviewKey(prev => prev + 1)
     } catch (error) {
       // Error handling is done in the hook
       console.error('Error adding block:', error)
@@ -183,7 +178,6 @@ export default function VisualBioBuilder() {
   const handleUpdateBlock = async (blockId, updates) => {
     try {
       await updateBlock(blockId, updates)
-      setPreviewKey(prev => prev + 1)
     } catch (error) {
       // Error handling is done in the hook
       console.error('Error updating block:', error)
@@ -193,7 +187,6 @@ export default function VisualBioBuilder() {
   const handleDeleteBlock = async (blockId) => {
     try {
       await deleteBlock(blockId)
-      setPreviewKey(prev => prev + 1)
     } catch (error) {
       // Error handling is done in the hook
       console.error('Error deleting block:', error)
@@ -203,9 +196,8 @@ export default function VisualBioBuilder() {
   const handleToggleBlock = async (blockId) => {
     const block = blocks.find(b => b.id === blockId)
     if (!block) return
-    
+
     await toggleBlockVisibility(blockId, !block.isActive)
-    setPreviewKey(prev => prev + 1)
   }
 
   const handleSaveBio = async () => {
@@ -220,7 +212,8 @@ export default function VisualBioBuilder() {
   }
 
 
-  const getTheme = () => {
+  // Memoize theme to prevent unnecessary re-renders
+  const theme = useMemo(() => {
     return bio?.customization || {
       theme: 'default',
       primaryColor: '#000000',
@@ -229,7 +222,7 @@ export default function VisualBioBuilder() {
       fontFamily: 'inter',
       buttonStyle: 'rounded'
     }
-  }
+  }, [bio?.customization])
 
   // Progressive loading: Show skeleton for initial load, partial skeleton for data loading
   if (loading) {
@@ -329,9 +322,8 @@ export default function VisualBioBuilder() {
           ) : (
             <MobilePreview
               blocks={blocks.filter(b => b.isActive)}
-              theme={getTheme()}
+              theme={theme}
               username={user?.username}
-              key={previewKey}
             />
           )}
 
@@ -350,20 +342,17 @@ export default function VisualBioBuilder() {
             <PropertiesPanel
               selectedBlock={selectedBlock}
               onUpdateBlock={handleUpdateBlock}
-              theme={getTheme()}
+              theme={theme}
               onUpdateTheme={(updates) => {
                 if (!bio) return
-                
-                // Update local state immediately for instant preview
-                const updatedCustomization = { 
-                  ...bio.customization, 
-                  ...updates 
+
+                // Build the updated customization
+                const updatedCustomization = {
+                  ...bio.customization,
+                  ...updates
                 }
-                
-                // Local state update is handled by the hook
-                setPreviewKey(prev => prev + 1)
-                
-                // Debounced save to backend
+
+                // Debounced save to backend (hook does optimistic update)
                 debouncedSaveCustomization(updatedCustomization)
               }}
             />

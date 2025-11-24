@@ -68,7 +68,7 @@ const bioService = {
   // Update bio customization
   updateBioCustomization: async (customizationData) => {
     const response = await api.put('/bio/customization', customizationData)
-    
+
     // Don't clear cache for customization - let React state handle real-time updates
     // Update cached version optimistically
     const cached = cacheService.get('bio-data')
@@ -76,7 +76,21 @@ const bioService = {
       cached.bio.customization = { ...cached.bio.customization, ...customizationData }
       cacheService.set('bio-data', cached, 10 * 60 * 1000)
     }
-    
+
+    return response.data
+  },
+
+  // Update bio settings
+  updateBioSettings: async (settingsData) => {
+    const response = await api.put('/bio/settings', settingsData)
+
+    // Update cached version
+    const cached = cacheService.get('bio-data')
+    if (cached && cached.bio) {
+      cached.bio.settings = { ...cached.bio.settings, ...settingsData }
+      cacheService.set('bio-data', cached, 10 * 60 * 1000)
+    }
+
     return response.data
   },
 
