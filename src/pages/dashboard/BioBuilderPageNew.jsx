@@ -45,6 +45,7 @@ export function BioBuilderPageNew() {
     toggleBlockVisibility,
     uploadImage,
     saveChanges,
+    resetBio,
     setSelectedBlockId,
     refresh
   } = useBioDataSimple()
@@ -187,6 +188,7 @@ export function BioBuilderPageNew() {
                   bio={bioData}
                   user={user}
                   onUpdateSettings={updateSettings}
+                  onResetBio={resetBio}
                   loading={loading}
                 />
               </TabsContent>

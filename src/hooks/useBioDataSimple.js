@@ -385,14 +385,14 @@ export const useBioDataSimple = () => {
     try {
       setSaving(true)
       const response = await bioService.uploadBioImage(file, type)
-      
+
       if (type === 'avatar') {
         updateProfile({ avatar: response.imageUrl })
       }
-      
+
       toast.success('Image uploaded successfully')
       return response.imageUrl
-      
+
     } catch (error) {
       console.error('Error uploading image:', error)
       toast.error('Failed to upload image')
@@ -401,6 +401,60 @@ export const useBioDataSimple = () => {
       setSaving(false)
     }
   }, [updateProfile])
+
+  // Reset bio to default state
+  const resetBio = useCallback(async () => {
+    try {
+      setSaving(true)
+
+      // Delete all blocks from server
+      const deletePromises = bioData.blocks.map(block =>
+        bioService.deleteBlock(block.id).catch(err => {
+          console.error(`Failed to delete block ${block.id}:`, err)
+        })
+      )
+      await Promise.all(deletePromises)
+
+      // Reset local state to defaults
+      const defaultBioData = {
+        profile: {
+          avatar: '',
+          title: '',
+          description: '',
+          location: ''
+        },
+        customization: {
+          theme: 'default',
+          primaryColor: '#000000',
+          backgroundColor: '#ffffff',
+          textColor: '#000000',
+          fontFamily: 'inter',
+          buttonStyle: 'rounded'
+        },
+        blocks: [],
+        settings: {
+          isPublished: false,
+          allowComments: true,
+          showAnalytics: true
+        }
+      }
+
+      setBioData(defaultBioData)
+      setSelectedBlockId(null)
+
+      // Save reset profile and settings to server
+      await bioService.updateBioProfile(defaultBioData.profile)
+      await bioService.updateBioCustomization(defaultBioData.customization)
+      await bioService.updateBioSettings(defaultBioData.settings)
+
+    } catch (error) {
+      console.error('Error resetting bio:', error)
+      toast.error('Failed to reset bio')
+      throw error
+    } finally {
+      setSaving(false)
+    }
+  }, [bioData.blocks])
 
   return {
     // Data
@@ -424,6 +478,7 @@ export const useBioDataSimple = () => {
     reorderBlocks,
     saveChanges,
     uploadImage,
+    resetBio,
     setSelectedBlockId,
     refresh: fetchBioData
   }
